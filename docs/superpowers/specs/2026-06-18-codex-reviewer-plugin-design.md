@@ -15,7 +15,7 @@ The existing reviewer directory becomes a dual-surface plugin:
 - `.claude-plugin/plugin.json` and `commands/` continue serving Claude Code.
 - `.codex-plugin/plugin.json` exposes the plugin to Codex.
 - `skills/review-pr/` contains the Codex orchestration skill and UI metadata.
-- `.codex/agents/` contains project-scoped custom reviewer definitions.
+- `skills/review-pr/references/reviewers/` contains the specialist reviewer prompts.
 - `.agents/plugins/marketplace.json` exposes the repository as a Codex marketplace.
 
 The Codex skill is named `review-pr`. It is explicitly invoked with prompts such as:
@@ -46,7 +46,7 @@ The skill never merges a pull request.
 
 ## Reviewer Agents
 
-Each existing Claude reviewer maps to a read-only Codex custom agent:
+Each existing Claude reviewer maps to a specialist prompt loaded by the Codex skill:
 
 - `bug-hunter`
 - `guidelines`
@@ -59,15 +59,15 @@ Each existing Claude reviewer maps to a read-only Codex custom agent:
 - `springa-react`
 - `garmin-ciq`
 
-Each agent receives only the orchestration context it needs: diff or patch data, changed-file risk tiers, change summary, and repository guidance. Agent instructions preserve the original scope boundaries so reviewers do not duplicate one another unnecessarily.
+The orchestrator spawns built-in Codex subagents and gives each one the selected specialist prompt plus only the orchestration context it needs: diff or patch data, changed-file risk tiers, change summary, and repository guidance. Agent instructions preserve the original scope boundaries so reviewers do not duplicate one another unnecessarily.
 
-Custom agents use `sandbox_mode = "read-only"`. Universal reviewers default to a cost-conscious model suitable for read-heavy analysis with higher reasoning effort where correctness matters. The orchestrator may request stronger reasoning for Deep reviews, but model names are not encoded as user-facing flags equivalent to Claude's `--sonnet` or `--opus`.
+Reviewer subagents are explicitly instructed to remain read-only and return findings only. The parent sandbox policy still applies to every child. Model names are not encoded as user-facing flags equivalent to Claude's `--sonnet` or `--opus`; Codex chooses an appropriate worker configuration unless the invoking user requests a specific model or reasoning level.
 
 ## Codex-Specific Adaptations
 
 ### Subagents
 
-Claude `Agent` calls become Codex custom-agent dispatch. The skill explicitly requires parallel subagents because Codex does not spawn them implicitly.
+Claude `Agent` calls become parallel built-in Codex subagents initialized with packaged specialist prompts. The skill explicitly requires parallel subagents because Codex does not spawn them implicitly.
 
 ### Repository guidance
 
@@ -134,7 +134,7 @@ Validation has four layers:
 
 1. Validate `.codex-plugin/plugin.json` with the bundled Codex plugin validator.
 2. Validate `skills/review-pr/SKILL.md` and `agents/openai.yaml` with the bundled skill validator.
-3. Parse every custom-agent TOML file and verify required fields, read-only sandboxing, and unique agent names.
+3. Verify every packaged reviewer prompt has a unique role, the common findings contract, explicit read-only boundaries, and the expected scope exclusions.
 4. Forward-test the installed skill against PRs #6 and #7:
    - confirm appropriate review depth;
    - confirm the intended agents are dispatched;
