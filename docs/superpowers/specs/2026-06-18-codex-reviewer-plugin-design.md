@@ -116,12 +116,13 @@ Every subagent finding must contain:
 - category;
 - concrete suggestion.
 
-The orchestrator must reject positive observations and unsupported speculation. Multiple symptoms caused by the same defect become one issue. Claims about compilation, missing APIs, races, null dereferences, security, explicit guidance violations, or other scores above 75 require direct verification against source, tests, documentation, or an executable check.
+The orchestrator must reject positive observations and unsupported speculation. Multiple symptoms caused by the same defect become one issue. Claims about compilation, missing APIs, races, null dereferences, security, explicit guidance violations, or other scores above 75 require direct read-only verification against source, existing tests, documentation, generated definitions, or existing CI results. Executing PR code requires separate user authorization and an isolated environment; otherwise the claim remains at 50 or below.
 
 ## Safety Boundaries
 
 - Reviewing is read-only until the user selects findings.
 - No automatic fixes, commits, pushes, comments, approvals, or merges.
+- Selecting fixes or review comments does not authorize resolving threads, approving, or requesting changes; each requires explicit user authorization.
 - No score or confidence metadata appears in GitHub comments.
 - Review comments target the current PR head SHA.
 - A failed inline comment prevents submission of the summary review.
