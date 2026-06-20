@@ -14,14 +14,14 @@ The existing reviewer directory becomes a dual-surface plugin:
 
 - `.claude-plugin/plugin.json` and `commands/` continue serving Claude Code.
 - `.codex-plugin/plugin.json` exposes the plugin to Codex.
-- `skills/review-pr/` contains the Codex orchestration skill and UI metadata.
-- `skills/review-pr/references/reviewers/` contains the specialist reviewer prompts.
+- `skills/parallel-review/` contains the Codex orchestration skill and UI metadata.
+- `skills/parallel-review/references/reviewers/` contains the specialist reviewer prompts.
 - `.agents/plugins/marketplace.json` exposes the repository as a Codex marketplace.
 
-The Codex skill is named `review-pr`. It is explicitly invoked with prompts such as:
+The Codex skill is named `parallel-review`. It is explicitly invoked with prompts such as:
 
 ```text
-Use $review-pr to review PR #6 with parallel subagents.
+Use $parallel-review to review PR #6 with parallel subagents.
 ```
 
 Explicit invocation is the default because reviews fan out into multiple agent threads and therefore carry meaningful cost.
@@ -30,7 +30,7 @@ Explicit invocation is the default because reviews fan out into multiple agent t
 
 The Codex skill preserves these stages from the Claude command:
 
-1. Determine whether the target is a numbered PR, the current branch PR, or a local diff.
+1. Determine whether the target is a numbered PR, the current branch PR, a branch comparison, or a local diff, and apply optional repository-relative path filters.
 2. Load repository guidance from applicable `AGENTS.md` files and, for compatibility, `CLAUDE.md`.
 3. Gather the complete diff, changed files, PR metadata, comments, and checks without changing repository state.
 4. Classify changed files as Critical, Standard, or Low risk.
@@ -134,7 +134,7 @@ The orchestrator must reject positive observations and unsupported speculation. 
 Validation has four layers:
 
 1. Validate `.codex-plugin/plugin.json` with the bundled Codex plugin validator.
-2. Validate `skills/review-pr/SKILL.md` and `agents/openai.yaml` with the bundled skill validator.
+2. Validate `skills/parallel-review/SKILL.md` and `agents/openai.yaml` with the bundled skill validator.
 3. Verify every packaged reviewer prompt has a unique role, the common findings contract, explicit read-only boundaries, and the expected scope exclusions.
 4. Forward-test the installed skill against PRs #6 and #7:
    - confirm appropriate review depth;
