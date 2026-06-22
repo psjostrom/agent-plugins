@@ -14,6 +14,7 @@
 
 **Files:**
 - Modify: `plugins/reviewer/scripts/validate_codex_reviewer.py`
+- Create: `plugins/reviewer/scripts/test_validate_codex_reviewer.py`
 
 - [ ] **Step 1: Add the failing reviewer expectations**
 
@@ -26,14 +27,18 @@ Add `frontload-core` and `frontload-integration` to `REVIEWER_NAMES`. Add:
 
 to `REVIEWER_MARKERS`.
 
-In `validate_skill`, require the domain reviewer section to contain:
+Add focused regression tests for active-section mapping, Standard/Deep panel
+wiring, and explicit Frontload repository identity. In `validate_skill`, scope
+the domain reviewer checks to the text between `### Domain reviewers` and
+`## 6. Dispatch parallel reviewers`.
 
 ```python
 for marker in (
-    "Frontload: `frontload-core.md`, `frontload-integration.md`",
+    "Detect Frontload only when the repository name is `frontload` or a root package manifest identifies the project as `frontload`.",
+    "- Frontload: `frontload-core.md`, `frontload-integration.md`",
     "Domain reviewers run at Standard and Deep, never Quick.",
 ):
-    require(marker in text, f"{skill_path}: missing domain reviewer invariant {marker!r}", errors)
+    require(marker in domain_section, f"{skill_path}: missing active domain reviewer invariant {marker!r}", errors)
 ```
 
 - [ ] **Step 2: Run the validator to verify RED**
@@ -41,10 +46,10 @@ for marker in (
 Run:
 
 ```bash
-python3 plugins/reviewer/scripts/validate_codex_reviewer.py
+python3 plugins/reviewer/scripts/test_validate_codex_reviewer.py
 ```
 
-Expected: FAIL because `frontload-core.md`, `frontload-integration.md`, and the Frontload orchestration entry do not exist.
+Expected: FAIL because the focused wiring validator does not exist.
 
 ### Task 2: Add the Frontload reviewer prompts and orchestration
 
