@@ -54,8 +54,9 @@ used by those calculations.
 
 ## Selection and Dispatch
 
-Detect Frontload from the repository name and changed code, using the same
-repository-level domain selection model as Strimma and Springa.
+Detect Frontload only when the repository name is `frontload` or a root package
+manifest identifies the project as `frontload`. Arbitrary mentions of
+Frontload in changed text must not activate the reviewers.
 
 At Standard or Deep depth, select both Frontload reviewers. Never select them
 at Quick depth. Dispatch them as independent, read-only Codex subagents using
@@ -72,7 +73,12 @@ Extend `validate_codex_reviewer.py` so:
 - both Frontload prompt files are required;
 - unexpected reviewer prompt files still fail validation;
 - each new prompt must contain role-specific markers proving its scope;
-- the orchestration skill must list Frontload and both prompt filenames;
+- the active Domain reviewers section must list Frontload and both prompt
+  filenames;
+- the Standard and Deep panel rows must continue selecting all matching domain
+  reviewers;
+- regression tests must reject stale mappings outside the active domain
+  section, missing panel wiring, and ambiguous changed-text detection;
 - the Claude reviewer files and command are not required to change.
 
 Use a test-first validation cycle:
