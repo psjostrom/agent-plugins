@@ -23,6 +23,28 @@ available_plugins() {
   done
 }
 
+# Remove symlinks in the target that point into the plugin's source dir but
+# no longer resolve (the backing file was renamed or deleted). Handles upgrades
+# across file renames — e.g. review.md -> parallel-review.md — where the prior
+# install left a dangling link opencode would still discover.
+prune_stale_links() {
+  p_src="$1"
+  p_target="$2"
+  for sub in "$p_src"/*; do
+    [ -d "$sub" ] || continue
+    category="$(basename "$sub")"
+    [ -d "$p_target/$category" ] || continue
+    for link in "$p_target/$category"/*; do
+      [ -L "$link" ] || continue
+      case "$(readlink "$link")" in
+        "$p_src"/*)
+          [ -e "$link" ] || { rm "$link"; echo "  pruned stale $link"; }
+          ;;
+      esac
+    done
+  done
+}
+
 link_plugin() {
   plugin="$1"
   target="$2"
@@ -32,6 +54,8 @@ link_plugin() {
     echo "Available: $(available_plugins | tr '\n' ' ')"
     exit 1
   fi
+
+  prune_stale_links "$src" "$target"
 
   for sub in "$src"/*; do
     [ -e "$sub" ] || continue
@@ -60,6 +84,8 @@ unlink_plugin() {
     echo "Plugin \"$plugin\" not found."
     exit 1
   fi
+
+  prune_stale_links "$src" "$target"
 
   for sub in "$src"/*; do
     [ -e "$sub" ] || continue
