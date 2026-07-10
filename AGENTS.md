@@ -26,6 +26,10 @@ These instructions apply to the whole repository.
 - Preserve platform boundaries: Claude command/agent files, Codex skill files,
   and opencode agent/command files are separate surfaces, but behavior that is
   intentionally mirrored should stay consistent across all supported agents.
+- Reviewer role parity is required across all supported reviewer surfaces. If a
+  reviewer role exists for Claude Code, Codex, or opencode, it must exist and be
+  wired for all three unless an intentional exception is documented in the same
+  change.
 - For Codex reviewer changes, resolve `references/...` paths relative to
   `plugins/reviewer/skills/parallel-review/SKILL.md`, matching the skill's own
   instructions.
@@ -47,7 +51,7 @@ These instructions apply to the whole repository.
 
 ## Validation
 
-- Run the Codex reviewer bundle validator after changing reviewer Codex files:
+- Run the reviewer bundle validator after changing reviewer platform files:
 
   ```sh
   python3 plugins/reviewer/scripts/validate_codex_reviewer.py
