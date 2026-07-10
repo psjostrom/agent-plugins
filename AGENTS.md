@@ -38,8 +38,8 @@ These instructions apply to the whole repository.
   related tests as needed.
 - For opencode reviewer changes, keep the primary orchestrator agent in
   `plugins/reviewer/opencode/agents/reviewer.md`, reviewer subagents in
-  `plugins/reviewer/opencode/agents/*.md`, and the `/review` command in
-  `plugins/reviewer/opencode/commands/review.md`.
+  `plugins/reviewer/opencode/agents/*.md`, and the `/parallel-review` command in
+  `plugins/reviewer/opencode/commands/parallel-review.md`.
 - In opencode files, do not add Claude plugin prefixes or Codex skill syntax.
   opencode uses bare agent names, the `Task` tool with `subagent_type`, and
   model selection through `opencode.json` rather than per-call flags.
