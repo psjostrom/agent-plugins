@@ -40,8 +40,13 @@ link_plugin() {
     for file in "$sub"/*; do
       [ -e "$file" ] || continue
       name="$(basename "$file")"
-      ln -sfh "$file" "$target/$category/$name"
-      echo "  linked $target/$category/$name"
+      dest="$target/$category/$name"
+      if [ -e "$dest" ] && [ ! -L "$dest" ]; then
+        echo "  skip $dest — exists and is not a symlink (use uninstall first if you want to replace it)"
+        continue
+      fi
+      ln -sfn "$file" "$dest"
+      echo "  linked $dest"
     done
   done
   echo "Installed $plugin -> $target"
