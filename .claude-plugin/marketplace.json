@@ -40,6 +40,23 @@
         "automation"
       ],
       "category": "automation"
+    },
+    {
+      "name": "shipwright",
+      "source": "./plugins/shipwright",
+      "description": "Strict end-to-end development with adaptive subagents, independent review, and real verification.",
+      "version": "1.0.0",
+      "author": {
+        "name": "psjostrom"
+      },
+      "keywords": [
+        "development",
+        "subagents",
+        "code-review",
+        "verification",
+        "qa"
+      ],
+      "category": "development"
     }
   ]
 }
