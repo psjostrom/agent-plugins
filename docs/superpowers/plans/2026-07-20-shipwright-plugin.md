@@ -134,7 +134,7 @@ Expected: every command exits 0.
 - [ ] **Step 7: Commit**
 
 ```bash
-git add plugins/shipwright/.codex-plugin/plugin.json plugins/shipwright/.claude-plugin/plugin.json plugins/shipwright/skills/shipwright/SKILL.md plugins/shipwright/skills/shipwright/agents/openai.yaml .agents/plugins/marketplace.json .claude-plugin/marketplace.json README.md docs/superpowers/specs/2026-07-19-shipwright-design.md
+git add plugins/shipwright/.codex-plugin/plugin.json plugins/shipwright/.claude-plugin/plugin.json plugins/shipwright/skills/shipwright/SKILL.md plugins/shipwright/skills/shipwright/agents/openai.yaml .agents/plugins/marketplace.json .claude-plugin/marketplace.json README.md
 git commit -m "Add Shipwright plugin package"
 ```
 
