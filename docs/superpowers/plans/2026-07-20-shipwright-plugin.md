@@ -47,8 +47,10 @@ Run both required authoring helpers in task-specific temporary directories, neve
 ```bash
 plugin_tmp=$(mktemp -d)
 skill_tmp=$(mktemp -d)
-python3 /Users/psjostrom/.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py shipwright --path "$plugin_tmp" --with-skills
-python3 /Users/psjostrom/.codex/skills/.system/skill-creator/scripts/init_skill.py shipwright --path "$skill_tmp" --resources references --interface 'display_name=Shipwright' --interface 'short_description=Strict end-to-end development workflow' --interface 'default_prompt=Use $shipwright to build this feature end to end with independent review and real verification.'
+plugin_creator_root="<plugin-creator-root>"
+skill_creator_root="<skill-creator-root>"
+python3 "$plugin_creator_root/scripts/create_basic_plugin.py" shipwright --path "$plugin_tmp" --with-skills
+python3 "$skill_creator_root/scripts/init_skill.py" shipwright --path "$skill_tmp" --resources references --interface 'display_name=Shipwright' --interface 'short_description=Strict end-to-end development workflow' --interface 'default_prompt=Use $shipwright to build this feature end to end with independent review and real verification.'
 ```
 
 Expected: both commands exit 0 and create disposable `shipwright` scaffolds. Inspect their manifest and metadata shapes, then leave the temporary directories outside the repository.
@@ -117,12 +119,14 @@ Append a Codex entry with local source `./plugins/shipwright`, `AVAILABLE`, `ON_
 Run:
 
 ```bash
+skill_creator_root="<skill-creator-root>"
+plugin_creator_root="<plugin-creator-root>"
 python3 -m json.tool plugins/shipwright/.codex-plugin/plugin.json >/dev/null
 python3 -m json.tool plugins/shipwright/.claude-plugin/plugin.json >/dev/null
 python3 -m json.tool .agents/plugins/marketplace.json >/dev/null
 python3 -m json.tool .claude-plugin/marketplace.json >/dev/null
-python3 /Users/psjostrom/.codex/skills/.system/skill-creator/scripts/quick_validate.py plugins/shipwright/skills/shipwright
-python3 /Users/psjostrom/.codex/skills/.system/plugin-creator/scripts/validate_plugin.py plugins/shipwright
+python3 "$skill_creator_root/scripts/quick_validate.py" plugins/shipwright/skills/shipwright
+python3 "$plugin_creator_root/scripts/validate_plugin.py" plugins/shipwright
 ```
 
 Expected: every command exits 0.
@@ -182,7 +186,8 @@ Include every case in the design matrix with exact input condition, expected dec
 Run:
 
 ```bash
-python3 /Users/psjostrom/.codex/skills/.system/skill-creator/scripts/quick_validate.py plugins/shipwright/skills/shipwright
+skill_creator_root="<skill-creator-root>"
+python3 "$skill_creator_root/scripts/quick_validate.py" plugins/shipwright/skills/shipwright
 rg -n '\$full-dev|full-dev-' plugins/shipwright .agents/plugins/marketplace.json .claude-plugin/marketplace.json README.md
 wc -l plugins/shipwright/skills/shipwright/SKILL.md
 ```
