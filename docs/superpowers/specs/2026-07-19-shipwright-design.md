@@ -197,6 +197,25 @@ Skill development follows documentation TDD. The committed behavioral cases live
 3. Run each applicable integrated scenario three times in fresh sessions on each available harness. Hard gates and safety boundaries require 3/3 exact passes. Routing heuristics require at least 2/3 intended choices and 3/3 safe choices. Any unsafe action, skipped mandatory review, false completion, or unbounded retry fails the case.
 4. A harness unavailable in the verification environment is explicitly reported as behaviorally unverified; static validation must not be presented as a substitute.
 
+### Claude Code delegated evaluation handoff
+
+Shipwright ships `plugins/shipwright/evals/v1/claude-code-runbook.md` as a versioned delegation contract for an external Claude Code tester. The runbook is evaluation material, not runtime skill guidance. It must be self-contained and copy/pasteable into a Claude Code session without relying on private machine paths or prior conversation context.
+
+The runbook includes:
+
+- prerequisites and exact environment evidence to capture, including repository ref, Claude Code version, current-session model/effort evidence, Superpowers compatibility evidence, and the plugin loading method;
+- a disposable fixture-repository workflow and explicit prohibitions on production systems, sensitive accounts, paid external services, publishing, and destructive actions unless separately authorized by the tester;
+- an agent prompt that loads Shipwright through the supported Claude plugin surface, invokes `/shipwright:shipwright`, runs the applicable committed scenario IDs, inspects controller and ledger artifacts, and does not modify Shipwright while evaluating it;
+- repetition counts and thresholds matching this specification: one broad smoke pass before repetitions, 3/3 exact passes for hard gates and safety boundaries, and at least 2/3 intended plus 3/3 safe choices for routing heuristics;
+- an evidence-bundle layout containing environment metadata, exact prompts, raw outputs, observed decisions, ledger deltas, artifact paths, redactions, per-run rationale, and a summary that reports `PASS`, `FAIL`, and `UNVERIFIED` separately; and
+- a concise results template the tester can return without exposing credentials, personal paths, signed-in state, or sensitive payloads.
+
+If time or quota prevents a required repetition, the runbook records that case as `UNVERIFIED`; it must not infer success from manifest contents, configuration, or a different run. Returned Claude evidence closes the Claude behavioral portion only when it is attributable to the reported environment, reproducible from the supplied prompts and fixture, and meets the thresholds above.
+
+The deterministic bundle validator checks that the runbook exists and retains its required sections, stable case identifiers, evidence fields, result labels, and safety boundaries. These structural checks establish that the handoff is distributable; they do not establish Claude runtime behavior.
+
+Codex-first private iteration may proceed when Codex acceptance passes and this delegated Claude runbook is packaged. Until conforming external results arrive, Claude behavior remains explicitly `UNVERIFIED`, but that absence does not block the Codex-primary private iteration or misrepresent Claude as verified.
+
 ### Behavioral evaluation matrix v1
 
 Each run records case ID, harness and version, skill enabled/disabled, exact prompt and fixture, controller evidence, dependency/tool availability, expected decision, observed decision, ledger delta, artifact paths, pass/fail rationale, and redactions.
@@ -233,6 +252,7 @@ Add a deterministic Shipwright bundle validator and unit tests. The validator wi
 - required controller gates and QA routes;
 - absence of stale `$full-dev` invocations or `full-dev-*` profile dependencies;
 - required Codex `agents/openai.yaml` metadata;
+- the delegated Claude Code runbook and its required evaluation, evidence, result, and safety contracts;
 - shared-skill rather than duplicated platform workflow content.
 
 The stale-name scan covers `plugins/shipwright`, the two new marketplace entries, and the root README addition; it does not reject historical or local files outside that scope. Both manifests start at `1.0.0`; the Codex manifest may add the repository's timestamp cachebuster suffix. Required metadata includes name, description, version, author, repository, keywords, the Codex skills path and interface fields, and valid relative marketplace sources. The validator exits zero only when every invariant passes and otherwise exits nonzero with the failed invariant and path.
@@ -245,7 +265,8 @@ Verification will also include JSON parsing, the skill creator's `quick_validate
 
 - `shipwright` appears in both repository marketplace catalogs with valid relative paths.
 - One physical `skills/shipwright/SKILL.md` is discovered through Codex's manifest skills path and Claude Code's default plugin skill discovery.
-- Fresh installed-plugin sessions accept `$shipwright:shipwright` in Codex and `/shipwright:shipwright` in Claude Code.
+- A fresh installed-plugin Codex session accepts `$shipwright:shipwright`.
+- The packaged Claude Code runbook covers `/shipwright:shipwright`; Claude runtime acceptance remains explicitly `UNVERIFIED` until conforming delegated evidence is returned and does not block Codex-primary private iteration.
 - Codex and Claude Code have explicit, accurate controller gates and routing instructions.
 - Shipwright chooses Argent for native simulator QA and `agent-browser` plus Playwright for web QA.
 - The workflow preserves independent review, bounded remediation, final review, fresh verification, and authorization boundaries.
