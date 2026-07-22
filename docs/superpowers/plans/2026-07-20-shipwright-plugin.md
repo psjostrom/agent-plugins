@@ -19,7 +19,7 @@
 - Use Argent 0.16.0 or compatible newer for Android/iOS QA and `agent-browser` 0.32.3 or compatible newer plus Playwright for web QA.
 - Never install tools, push, open a PR, deploy, publish, contact production, use paid quota or credentials, or perform destructive actions without explicit authorization.
 - Preserve independent task review, bounded remediation, whole-change review, fresh verification, and applicable real-world QA.
-- Do not modify or remove the local `~/.codex/skills/full-dev` skill or its personal agent profiles.
+- Do not require personal Codex agent profiles; the plugin must work from its packaged configuration.
 - Keep `.superpowers/` run outputs untracked; commit only `plugins/shipwright/evals/v1/scenarios.md` as the behavioral contract.
 
 ---
@@ -188,7 +188,7 @@ Run:
 ```bash
 skill_creator_root="<skill-creator-root>"
 python3 "$skill_creator_root/scripts/quick_validate.py" plugins/shipwright/skills/shipwright
-rg -n '\$full-dev|full-dev-' plugins/shipwright .agents/plugins/marketplace.json .claude-plugin/marketplace.json README.md
+rg -n 'legacy invocation|personal-profile dependency' plugins/shipwright .agents/plugins/marketplace.json .claude-plugin/marketplace.json README.md
 wc -l plugins/shipwright/skills/shipwright/SKILL.md
 ```
 
