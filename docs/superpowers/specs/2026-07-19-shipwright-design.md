@@ -2,7 +2,7 @@
 
 ## Summary
 
-Add a reusable `shipwright` development-orchestration plugin to this repository. Shipwright is a renamed, cross-platform evolution of the local `full-dev` Codex skill. One shared Agent Skill will serve Codex and Claude Code, with small platform references for runtime verification, model routing, and subagent syntax.
+Add a reusable `shipwright` development-orchestration plugin to this repository. Shipwright is a cross-platform successor to an earlier local development-orchestration workflow. One shared Agent Skill will serve Codex and Claude Code, with small platform references for runtime verification, model routing, and subagent syntax.
 
 The plugin will preserve the workflow's core promise: turn an approved feature into reviewed, remediated, and genuinely verified work without requiring the user to copy handoffs between agents.
 
@@ -19,7 +19,7 @@ The plugin will preserve the workflow's core promise: turn an approved feature i
 
 ## Non-goals
 
-- Do not modify or remove the existing local `~/.codex/skills/full-dev` skill or its personal Codex agent profiles.
+- Do not require personal Codex agent profiles; the plugin must work from its packaged configuration.
 - Do not add opencode support in this change.
 - Do not bundle or duplicate the Superpowers skills Shipwright depends on.
 - Do not make Shipwright install Argent, `agent-browser`, Playwright, or other external tools automatically.
@@ -41,7 +41,7 @@ plugins/shipwright/
 
 The repository marketplaces will each gain a `shipwright` entry, and the root `README.md` will list the plugin. The Codex manifest will expose `./skills/`; Claude Code will discover the same default `skills/` directory. The shared `SKILL.md` remains below 500 lines and contains only platform-neutral workflow logic. It will instruct the controller to load exactly one platform reference after identifying the active harness.
 
-No Claude command wrapper is needed. Codex uses the plugin namespace, so users invoke `$shipwright:shipwright`; Claude Code users invoke `/shipwright:shipwright`. The skill name and all examples will use `shipwright`; no `full-dev` invocation alias will be shipped.
+No Claude command wrapper is needed. Codex uses the plugin namespace, so users invoke `$shipwright:shipwright`; Claude Code users invoke `/shipwright:shipwright`. The skill name and all examples will use `shipwright`; no legacy invocation alias will be shipped.
 
 ## Controller gate
 
@@ -250,7 +250,7 @@ Add a deterministic Shipwright bundle validator and unit tests. The validator wi
 - marketplace paths and required Codex policy fields;
 - existence and reachability of platform references;
 - required controller gates and QA routes;
-- absence of stale `$full-dev` invocations or `full-dev-*` profile dependencies;
+- absence of stale legacy invocations or personal-profile dependencies;
 - required Codex `agents/openai.yaml` metadata;
 - the delegated Claude Code runbook and its required evaluation, evidence, result, and safety contracts;
 - shared-skill rather than duplicated platform workflow content.
@@ -270,5 +270,5 @@ Verification will also include JSON parsing, the skill creator's `quick_validate
 - Codex and Claude Code have explicit, accurate controller gates and routing instructions.
 - Shipwright chooses Argent for native simulator QA and `agent-browser` plus Playwright for web QA.
 - The workflow preserves independent review, bounded remediation, final review, fresh verification, and authorization boundaries.
-- No stale `full-dev` public name or undistributed profile dependency remains in the plugin.
+- No stale legacy public name or undistributed profile dependency remains in the plugin.
 - All deterministic validators and tests pass, and behavioral evaluation results distinguish verified harnesses from unavailable ones.
