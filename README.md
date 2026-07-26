@@ -1,10 +1,10 @@
 # agent-plugins
 
-Personal plugins for Claude Code, Codex, and opencode.
+Personal plugins for Claude Code, Codex, Cursor, and opencode.
 
 - `reviewer` — risk-based parallel review for pull requests and local changes.
 - `homey` — Homey Pro flow management for Claude Code.
-- `shipwright` — strict end-to-end development via `$shipwright:shipwright` in Codex or `/shipwright:shipwright` in Claude Code.
+- `shipwright` — strict end-to-end development via `$shipwright:shipwright` in Codex, `/shipwright:shipwright` in Claude Code, or `/shipwright` in Cursor.
 
 ## Install
 
@@ -41,6 +41,22 @@ claude plugin install shipwright@agent-plugins
 Reload plugins in an active session with `/reload-plugins`, or start a new
 Claude Code session. To install from a local checkout, replace
 `psjostrom/agent-plugins` with `.` in the marketplace command.
+
+### Cursor
+
+Symlink Shipwright into Cursor's local plugin directory from this repository
+root:
+
+```sh
+./install-cursor.sh install shipwright
+```
+
+Reload the Cursor window afterward. Shipwright requires Superpowers 6.1.1 or
+newer as a separate Cursor plugin. Uninstall with:
+
+```sh
+./install-cursor.sh uninstall shipwright
+```
 
 ### opencode
 
