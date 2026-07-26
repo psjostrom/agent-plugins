@@ -1,6 +1,6 @@
 # agent-plugins
 
-Personal plugins for Claude Code, Codex, and opencode.
+Personal plugins for Claude Code, Codex, Cursor, and opencode.
 
 - `reviewer` — risk-based parallel review for pull requests and local changes.
 - `homey` — Homey Pro flow management for Claude Code.
@@ -59,3 +59,29 @@ installation, run the installer from that repository and pass `--project`:
 ```sh
 /path/to/agent-plugins/install-opencode.sh install reviewer --project
 ```
+
+### Cursor
+
+Install reviewer (and any other Cursor-packaged plugins) from a local checkout:
+
+```sh
+git clone https://github.com/psjostrom/agent-plugins.git
+cd agent-plugins
+./install-cursor.sh install reviewer
+```
+
+List available plugins and install state:
+
+```sh
+./install-cursor.sh list
+```
+
+Uninstall:
+
+```sh
+./install-cursor.sh uninstall reviewer
+```
+
+Invoke parallel review explicitly in Cursor — for example "use parallel-review"
+or `/parallel-review` when Cursor surfaces the slash command. The skill does
+not auto-invoke from ambient chat.

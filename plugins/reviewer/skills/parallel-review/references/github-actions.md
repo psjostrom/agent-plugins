@@ -86,3 +86,22 @@ ID=$(
 State the defect, impact, and concrete fix. Keep the body proportional. Do not mention scores.
 
 For a clean review, post `LGTM — no issues found.` as a `COMMENT` by default. Use `APPROVE` only when the user explicitly asks for approval. Use `REQUEST_CHANGES` only when the user explicitly asks for it and the platform permits it.
+
+### Self-PR clean review fallback
+
+When no issues scored above 25 and the user chose posting, try `APPROVE` with body `LGTM — no issues found.` first. If GitHub rejects approving your own pull request (HTTP 422 `Can not approve your own pull request`), fall back to `COMMENT` with the **exact same body** — do not prepend or alter the text. Do not ask the user first; a clean review means approval when the platform allows it.
+
+```bash
+echo "LGTM — no issues found." > /tmp/lgtm.txt
+ID=$(jq -n --arg commit "<head-sha>" --arg event "APPROVE" --rawfile body /tmp/lgtm.txt \
+    '{commit_id:$commit, event:$event, body:$body}' \
+  | gh api "repos/<owner>/<repo>/pulls/<number>/reviews" --method POST --input - --jq '.id' 2>/dev/null)
+if [ $? -eq 0 ] && [ -n "$ID" ]; then
+  printf 'APPROVED id=%s\n' "$ID"
+else
+  ID=$(jq -n --arg commit "<head-sha>" --arg event "COMMENT" --rawfile body /tmp/lgtm.txt \
+      '{commit_id:$commit, event:$event, body:$body}' \
+    | gh api "repos/<owner>/<repo>/pulls/<number>/reviews" --method POST --input - --jq '.id'
+  ) && printf 'COMMENTED id=%s\n' "$ID"
+fi
+```

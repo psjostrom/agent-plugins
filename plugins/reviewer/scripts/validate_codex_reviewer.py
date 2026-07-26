@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Validate the reviewer plugin bundle."""
+"""Validate the full multi-harness reviewer plugin bundle."""
 
 from __future__ import annotations
 
 import json
 import re
+import stat
 import sys
 from pathlib import Path
 
@@ -14,15 +15,28 @@ REPO_ROOT = PLUGIN_ROOT.parents[1]
 SKILL_ROOT = PLUGIN_ROOT / "skills" / "parallel-review"
 LEGACY_SKILL_ROOT = PLUGIN_ROOT / "skills" / "review-pr"
 MARKETPLACE_PATH = REPO_ROOT / ".agents" / "plugins" / "marketplace.json"
+CURSOR_MANIFEST = PLUGIN_ROOT / ".cursor-plugin" / "plugin.json"
+CURSOR_MARKETPLACE = REPO_ROOT / ".cursor-plugin" / "marketplace.json"
+INSTALL_CURSOR = REPO_ROOT / "install-cursor.sh"
+
+HARNESS_REFS = ("codex.md", "cursor.md", "claude-code.md", "opencode.md")
+MAX_SHELL_BODY_CHARS = 1200
+MAX_ORCHESTRATOR_BODY_CHARS = 2500
+OPENCODE_SKILLS_LINK = PLUGIN_ROOT / "opencode" / "skills"
 
 REQUIRED_PATHS = (
     PLUGIN_ROOT / ".codex-plugin" / "plugin.json",
+    CURSOR_MANIFEST,
     SKILL_ROOT / "SKILL.md",
     SKILL_ROOT / "agents" / "openai.yaml",
     SKILL_ROOT / "references" / "reviewer-contract.md",
     SKILL_ROOT / "references" / "scoring.md",
     SKILL_ROOT / "references" / "github-actions.md",
     MARKETPLACE_PATH,
+    CURSOR_MARKETPLACE,
+    INSTALL_CURSOR,
+    OPENCODE_SKILLS_LINK,
+    *tuple(SKILL_ROOT / "references" / name for name in HARNESS_REFS),
 )
 
 REVIEWER_NAMES = {
@@ -42,7 +56,7 @@ REVIEWER_NAMES = {
 }
 
 REVIEWER_MARKERS = {
-    "agent-plugins": ("plugin surfaces", "discovery directories", "platform-specific syntax"),
+    "agent-plugins": ("plugin surfaces", "discovery directories", "platform-specific syntax", "Cursor"),
     "architecture": ("workaround", "comments"),
     "bug-hunter": ("wrong results", "Never claim"),
     "error-edges": ("production-reachable", "Trace callers"),
@@ -61,6 +75,16 @@ PLACEHOLDERS = (
     "[TODO:",
     "TBD",
     "implement later",
+)
+
+ORCHESTRATOR_SHELLS = (
+    (PLUGIN_ROOT / "commands" / "review.md", "claude-code.md"),
+    (PLUGIN_ROOT / "opencode" / "commands" / "parallel-review.md", "opencode.md"),
+)
+
+AGENT_SHELL_DIRS = (
+    PLUGIN_ROOT / "agents",
+    PLUGIN_ROOT / "opencode" / "agents",
 )
 
 
@@ -86,6 +110,15 @@ def load_json(path: Path, errors: list[str]) -> dict:
 def require(condition: bool, message: str, errors: list[str]) -> None:
     if not condition:
         errors.append(message)
+
+
+def split_frontmatter(text: str) -> tuple[str, str]:
+    if not text.startswith("---\n"):
+        return "", text
+    end = text.find("\n---\n", 4)
+    if end < 0:
+        return "", text
+    return text[: end + 5], text[end + 5 :]
 
 
 def require_in_order(text: str, markers: tuple[str, ...], path: Path, label: str, errors: list[str]) -> None:
@@ -159,6 +192,14 @@ def validate_manifest(errors: list[str]) -> None:
         require(unsupported not in manifest, f"{path}: unsupported unused field {unsupported}", errors)
 
 
+def validate_cursor_manifest(errors: list[str]) -> None:
+    if not CURSOR_MANIFEST.exists():
+        return
+    manifest = load_json(CURSOR_MANIFEST, errors)
+    require(manifest.get("name") == "reviewer", f"{CURSOR_MANIFEST}: name must be reviewer", errors)
+    require(manifest.get("skills") == "./skills/", f"{CURSOR_MANIFEST}: skills must be ./skills/", errors)
+
+
 def validate_marketplace(errors: list[str]) -> None:
     if not MARKETPLACE_PATH.exists():
         return
@@ -187,6 +228,41 @@ def validate_marketplace(errors: list[str]) -> None:
     )
 
 
+def validate_cursor_marketplace(errors: list[str]) -> None:
+    if not CURSOR_MARKETPLACE.exists():
+        return
+    marketplace = load_json(CURSOR_MARKETPLACE, errors)
+    require(marketplace.get("name") == "agent-plugins", f"{CURSOR_MARKETPLACE}: unexpected name", errors)
+    entries = marketplace.get("plugins")
+    require(isinstance(entries, list), f"{CURSOR_MARKETPLACE}: plugins must be an array", errors)
+    if not isinstance(entries, list):
+        return
+    reviewer = next((entry for entry in entries if isinstance(entry, dict) and entry.get("name") == "reviewer"), None)
+    require(reviewer is not None, f"{CURSOR_MARKETPLACE}: missing reviewer entry", errors)
+    if not isinstance(reviewer, dict):
+        return
+    require(
+        reviewer.get("source") == "./plugins/reviewer",
+        f"{CURSOR_MARKETPLACE}: reviewer source must be ./plugins/reviewer",
+        errors,
+    )
+
+
+def validate_install_cursor(errors: list[str]) -> None:
+    if not INSTALL_CURSOR.exists():
+        return
+    mode = INSTALL_CURSOR.stat().st_mode
+    require(mode & stat.S_IXUSR, f"{INSTALL_CURSOR}: must be executable", errors)
+    text = INSTALL_CURSOR.read_text(encoding="utf-8")
+    for marker in (
+        "CURSOR_PLUGINS_LOCAL",
+        "Refusing to install",
+        "is not a symlink",
+        'ln -sfn "$src" "$dest"',
+    ):
+        require(marker in text, f"{INSTALL_CURSOR}: missing install safety marker {marker!r}", errors)
+
+
 def validate_skill(errors: list[str]) -> None:
     skill_path = SKILL_ROOT / "SKILL.md"
     metadata_path = SKILL_ROOT / "agents" / "openai.yaml"
@@ -194,9 +270,13 @@ def validate_skill(errors: list[str]) -> None:
         text = skill_path.read_text(encoding="utf-8")
         require(text.startswith("---\n"), f"{skill_path}: missing YAML frontmatter", errors)
         require(re.search(r"^name:\s*parallel-review\s*$", text, re.MULTILINE) is not None, f"{skill_path}: wrong name", errors)
+        require(
+            re.search(r"^disable-model-invocation:\s*true\s*$", text, re.MULTILINE) is not None,
+            f"{skill_path}: must set disable-model-invocation: true",
+            errors,
+        )
         require("# Parallel Code Review" in text, f"{skill_path}: wrong title", errors)
         require("parallel" in text.lower() and "subagent" in text.lower(), f"{skill_path}: must require parallel subagents", errors)
-        require("fork_context: false" in text, f"{skill_path}: must require self-contained subagent threads", errors)
         require("Do not merge" in text, f"{skill_path}: must explicitly forbid merging", errors)
         require(
             "from the directory containing this `SKILL.md`" in text,
@@ -223,6 +303,8 @@ def validate_skill(errors: list[str]) -> None:
         ):
             require(marker in text, f"{skill_path}: missing path-scope invariant {marker!r}", errors)
         validate_domain_reviewer_wiring(text, skill_path, errors)
+        for adapter in HARNESS_REFS:
+            require(f"`references/{adapter}`" in text, f"{skill_path}: must reference harness adapter {adapter!r}", errors)
         require_in_order(
             text,
             (
@@ -249,6 +331,24 @@ def validate_skill(errors: list[str]) -> None:
         )
         require("$parallel-review" in text, f"{metadata_path}: default prompt must mention $parallel-review", errors)
         require("$review-pr" not in text, f"{metadata_path}: must not mention legacy $review-pr", errors)
+
+
+def validate_harness_adapters(errors: list[str]) -> None:
+    for name in HARNESS_REFS:
+        path = SKILL_ROOT / "references" / name
+        if not path.exists():
+            continue
+        text = path.read_text(encoding="utf-8")
+        for role in sorted(REVIEWER_NAMES):
+            require(
+                f"{role}.md`" in text,
+                f"{path}: missing shared reviewer wiring for {role!r}",
+                errors,
+            )
+    codex_path = SKILL_ROOT / "references" / "codex.md"
+    if codex_path.exists():
+        text = codex_path.read_text(encoding="utf-8")
+        require("fork_context: false" in text, f"{codex_path}: must require self-contained subagent threads", errors)
 
 
 def validate_reviewers(errors: list[str]) -> None:
@@ -311,6 +411,98 @@ def validate_cross_platform_reviewer_parity(errors: list[str]) -> None:
     )
 
 
+def specialist_reads_shared_prompt(body: str, role: str) -> bool:
+    markers = (
+        f"${{CLAUDE_PLUGIN_ROOT}}/skills/parallel-review/references/reviewers/{role}.md",
+        f"$SHARED_ROOT/references/reviewers/{role}.md",
+        f"skills/parallel-review/references/reviewers/{role}.md",
+    )
+    return any(marker in body for marker in markers)
+
+
+def validate_thin_shells(errors: list[str]) -> None:
+    if OPENCODE_SKILLS_LINK.exists() or OPENCODE_SKILLS_LINK.is_symlink():
+        require(
+            OPENCODE_SKILLS_LINK.is_symlink() and OPENCODE_SKILLS_LINK.resolve() == (PLUGIN_ROOT / "skills").resolve(),
+            f"{OPENCODE_SKILLS_LINK}: must symlink to plugins/reviewer/skills",
+            errors,
+        )
+
+    for path, adapter in ORCHESTRATOR_SHELLS:
+        if not path.exists():
+            errors.append(f"{path}: missing orchestrator shell")
+            continue
+        text = path.read_text(encoding="utf-8")
+        _, body = split_frontmatter(text)
+        if path.name == "review.md":
+            require(
+                "${CLAUDE_PLUGIN_ROOT}/skills/parallel-review/SKILL.md" in text,
+                f"{path}: must load SKILL.md via CLAUDE_PLUGIN_ROOT",
+                errors,
+            )
+            require(
+                f"${{CLAUDE_PLUGIN_ROOT}}/skills/parallel-review/references/{adapter}" in text,
+                f"{path}: must load harness adapter via CLAUDE_PLUGIN_ROOT",
+                errors,
+            )
+        else:
+            require("$SHARED_ROOT/SKILL.md" in text, f"{path}: must load SKILL.md via SHARED_ROOT", errors)
+            require(
+                f"$SHARED_ROOT/references/{adapter}" in text,
+                f"{path}: must load harness adapter via SHARED_ROOT",
+                errors,
+            )
+            require("realpath" in text or "os.path.realpath" in text, f"{path}: must resolve install symlink", errors)
+        require(
+            len(body) <= MAX_ORCHESTRATOR_BODY_CHARS,
+            f"{path}: orchestrator body exceeds {MAX_ORCHESTRATOR_BODY_CHARS} chars (likely fat orchestrator)",
+            errors,
+        )
+        for forbidden in ("## Step 5: Synthesize", "Score each deduplicated issue", "git add -N"):
+            require(forbidden not in body, f"{path}: must not duplicate shared workflow content ({forbidden!r})", errors)
+
+    for directory in AGENT_SHELL_DIRS:
+        if not directory.exists():
+            continue
+        for path in sorted(directory.glob("*.md")):
+            if path.stem == "reviewer":
+                continue
+            text = path.read_text(encoding="utf-8")
+            _, body = split_frontmatter(text)
+            role = path.stem
+            require(
+                specialist_reads_shared_prompt(body, role),
+                f"{path}: must instruct reading shared reviewer prompt via plugin-absolute path",
+                errors,
+            )
+            if "opencode" in str(path):
+                require("$SHARED_ROOT" in body, f"{path}: opencode shell must resolve SHARED_ROOT", errors)
+                require(
+                    "external_directory: allow" in text,
+                    f"{path}: opencode shell must allow external_directory for SHARED_ROOT reads",
+                    errors,
+                )
+            else:
+                require("${CLAUDE_PLUGIN_ROOT}" in body, f"{path}: Claude shell must use CLAUDE_PLUGIN_ROOT", errors)
+            require(
+                len(body) <= MAX_SHELL_BODY_CHARS,
+                f"{path}: specialist shell body exceeds {MAX_SHELL_BODY_CHARS} chars (likely divergent prose)",
+                errors,
+            )
+            for marker in REVIEWER_MARKERS.get(role, ()):
+                require(marker not in body, f"{path}: must not re-host specialist marker {marker!r}", errors)
+
+    primary = PLUGIN_ROOT / "opencode" / "agents" / "reviewer.md"
+    if primary.exists():
+        text = primary.read_text(encoding="utf-8")
+        require(
+            "external_directory: allow" in text,
+            f"{primary}: primary agent must allow external_directory for SHARED_ROOT reads",
+            errors,
+        )
+        require("$SHARED_ROOT" in text, f"{primary}: primary agent must reference SHARED_ROOT", errors)
+
+
 def validate_references(errors: list[str]) -> None:
     contract_path = SKILL_ROOT / "references" / "reviewer-contract.md"
     scoring_path = SKILL_ROOT / "references" / "scoring.md"
@@ -326,6 +518,7 @@ def validate_references(errors: list[str]) -> None:
             "Do not execute PR code during initial review",
             "Unverified claims remain at 50 or below",
             "Never include it in GitHub comments",
+            "Do not include raw per-reviewer dumps",
         ):
             require(marker in text, f"{scoring_path}: missing invariant {marker!r}", errors)
     if actions_path.exists():
@@ -342,6 +535,8 @@ def validate_references(errors: list[str]) -> None:
             (r"include `start_line`, `start_side:\"RIGHT\"`, `line`, and `side:\"RIGHT\"`", "multi-line inline payload"),
             (r"jq --rawfile", "rawfile body handling"),
             (r"Stop on the first failed comment", "failure stop"),
+            (r"Self-PR clean review fallback", "self-PR APPROVE fallback"),
+            (r"Can not approve your own pull request", "self-PR rejection handling"),
         ):
             require(re.search(pattern, text) is not None, f"{actions_path}: missing invariant {label!r}", errors)
         require_in_order(
@@ -360,7 +555,13 @@ def validate_references(errors: list[str]) -> None:
 
 
 def validate_placeholders(errors: list[str]) -> None:
-    roots = [PLUGIN_ROOT / ".codex-plugin", SKILL_ROOT, REPO_ROOT / ".agents" / "plugins"]
+    roots = [
+        PLUGIN_ROOT / ".codex-plugin",
+        PLUGIN_ROOT / ".cursor-plugin",
+        SKILL_ROOT,
+        REPO_ROOT / ".agents" / "plugins",
+        REPO_ROOT / ".cursor-plugin",
+    ]
     for root in roots:
         if not root.exists():
             continue
@@ -378,10 +579,15 @@ def main() -> int:
     for path in REQUIRED_PATHS:
         require(path.exists(), f"{path}: required path is missing", errors)
     validate_manifest(errors)
+    validate_cursor_manifest(errors)
     validate_marketplace(errors)
+    validate_cursor_marketplace(errors)
+    validate_install_cursor(errors)
     validate_skill(errors)
+    validate_harness_adapters(errors)
     validate_reviewers(errors)
     validate_cross_platform_reviewer_parity(errors)
+    validate_thin_shells(errors)
     validate_references(errors)
     validate_placeholders(errors)
 

@@ -1,0 +1,29 @@
+{
+  "name": "agent-plugins",
+  "owner": {
+    "name": "psjostrom"
+  },
+  "metadata": {
+    "description": "Personal Cursor plugins",
+    "version": "1.0.0",
+    "pluginRoot": "./plugins"
+  },
+  "plugins": [
+    {
+      "name": "reviewer",
+      "source": "./plugins/reviewer",
+      "description": "Risk-based parallel review for pull requests and local changes with scored findings.",
+      "version": "1.1.0",
+      "author": {
+        "name": "psjostrom"
+      },
+      "keywords": [
+        "code-review",
+        "review",
+        "subagents",
+        "pr-review"
+      ],
+      "category": "development"
+    }
+  ]
+}

@@ -86,6 +86,51 @@ class ReviewerParityTests(unittest.TestCase):
         self.assertIn("missing opencode reviewer agents: frontload-core", errors)
 
 
+class SharedCoreTests(unittest.TestCase):
+    def test_accepts_harness_adapter_wiring(self) -> None:
+        errors: list[str] = []
+        VALIDATOR.validate_harness_adapters(errors)
+        self.assertEqual(errors, [])
+
+    def test_rejects_missing_role_in_cursor_adapter(self) -> None:
+        path = VALIDATOR.SKILL_ROOT / "references" / "cursor.md"
+        original = path.read_text(encoding="utf-8")
+        try:
+            path.write_text(original.replace("| `bug-hunter.md` |", "| `removed.md` |"), encoding="utf-8")
+            errors: list[str] = []
+            VALIDATOR.validate_harness_adapters(errors)
+            self.assertTrue(any("'bug-hunter'" in error for error in errors))
+        finally:
+            path.write_text(original, encoding="utf-8")
+
+
+class ThinShellTests(unittest.TestCase):
+    def test_accepts_current_specialist_shells(self) -> None:
+        errors: list[str] = []
+        VALIDATOR.validate_thin_shells(errors)
+        self.assertEqual(errors, [])
+
+    def test_rejects_fat_specialist_body(self) -> None:
+        path = VALIDATOR.PLUGIN_ROOT / "agents" / "bug-hunter.md"
+        original = path.read_text(encoding="utf-8")
+        try:
+            path.write_text(original + ("\n" + "x" * VALIDATOR.MAX_SHELL_BODY_CHARS), encoding="utf-8")
+            errors: list[str] = []
+            VALIDATOR.validate_thin_shells(errors)
+            self.assertTrue(any("exceeds" in error for error in errors))
+        finally:
+            path.write_text(original, encoding="utf-8")
+
+
+class CursorPackagingTests(unittest.TestCase):
+    def test_accepts_cursor_manifest_and_marketplace(self) -> None:
+        errors: list[str] = []
+        VALIDATOR.validate_cursor_manifest(errors)
+        VALIDATOR.validate_cursor_marketplace(errors)
+        VALIDATOR.validate_install_cursor(errors)
+        self.assertEqual(errors, [])
+
+
 class ValidatorOutputTests(unittest.TestCase):
     def test_failure_banner_matches_bundle_scope(self) -> None:
         stderr = io.StringIO()

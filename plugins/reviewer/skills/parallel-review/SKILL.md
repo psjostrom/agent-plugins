@@ -1,6 +1,7 @@
 ---
 name: parallel-review
 description: Use when reviewing a pull request, branch diff, repository path, staged changes, unstaged changes, or untracked code before merge, especially when parallel specialist reviewers or scored findings are wanted.
+disable-model-invocation: true
 ---
 
 # Parallel Code Review
@@ -51,7 +52,7 @@ Remain read-only.
 
 ### Repository guidance
 
-For every changed file, read every `AGENTS.md` in the directory chain from the repository root through the file's parent directory. Also read every `CLAUDE.md` in that same chain for migration compatibility. Apply guidance broad-to-narrow; nearer files override broader files. When `AGENTS.md` and `CLAUDE.md` conflict at the same scope, follow `AGENTS.md` for this Codex workflow.
+For every changed file, read every `AGENTS.md` in the directory chain from the repository root through the file's parent directory. Also read every `CLAUDE.md` in that same chain for migration compatibility. Apply guidance broad-to-narrow; nearer files override broader files. When `AGENTS.md` and `CLAUDE.md` conflict at the same scope, follow `AGENTS.md`.
 
 ### PR mode
 
@@ -149,18 +150,21 @@ Domain reviewers run at Standard and Deep, never Quick.
 
 Read `references/reviewer-contract.md` and every selected reviewer prompt before dispatch.
 
-Spawn one built-in Codex subagent per selected reviewer in one parallel batch. Use self-contained child threads without full-history inheritance (`fork_context: false` when the tool exposes that field). A read-oriented agent type is preferred, but never combine an explicit agent type, model, or reasoning override with a full-history fork. Each prompt must include:
+Identify the active harness and read the matching adapter completely:
 
-1. the complete common reviewer contract;
-2. exactly one specialist reviewer prompt;
-3. the review mode and target revision;
-4. the one-line change summary;
-5. changed files with risk tiers;
-6. applicable repository guidance;
-7. the relevant patch, or precise instructions for retrieving target-revision source read-only;
-8. a requirement to return only the structured findings contract.
+- Codex: `references/codex.md`
+- Cursor: `references/cursor.md`
+- Claude Code: `references/claude-code.md`
+- opencode: `references/opencode.md`
 
-Do not give reviewers write tasks. Wait for every selected reviewer before synthesis, then close completed reviewer threads. If one fails, retry that role once with a narrower prompt; if it still fails, disclose the missing coverage.
+Follow that adapter for parallel child dispatch. Shared requirements for every harness:
+
+1. Spawn one child per selected reviewer in one parallel batch.
+2. Each child prompt includes the complete common reviewer contract, exactly one specialist reviewer prompt, the review mode and target revision, the one-line change summary, changed files with risk tiers, applicable repository guidance, the relevant patch or precise read-only retrieval instructions, and a requirement to return only the structured findings contract.
+3. Do not give reviewers write tasks.
+4. Wait for every selected reviewer before synthesis, then close completed reviewer threads when the harness exposes that capability.
+5. If one child fails, retry that role once with a narrower prompt; if it still fails, disclose the missing coverage.
+6. If subagent tools are unavailable, disclose that the specialist panel cannot run and ask whether to continue as a single-agent review. Do not silently simulate multiple reviewers.
 
 ## 7. Synthesize and score
 
