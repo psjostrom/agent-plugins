@@ -129,22 +129,21 @@ Always state the selected depth, why, the panel, and how the user can override i
 ### Domain reviewers
 
 Detect domain reviewers from repository identity and project manifests, not
-arbitrary changed-text mentions.
+arbitrary changed-text mentions. Use the basename of the git repository root
+(`basename "$(git rev-parse --show-toplevel)"`) plus root manifests as specified:
 
-Detect Frontload only when the repository name is `frontload` or a root package
-manifest identifies the project as `frontload`.
-
-Detect Agent Plugins only when the repository name is `agent-plugins`, or when
-the repo contains `.agents/plugins/marketplace.json` and `plugins/reviewer/`.
-
-- Strimma: `strimma-coroutine.md`, `strimma-medical.md`
-- Springa: `springa-api.md`, `springa-react.md`
-- Garmin/Connect IQ: `garmin-ciq.md`
-- Frontload: `frontload-core.md`, `frontload-integration.md`
-- Agent Plugins: `agent-plugins.md`
-- Generic: no domain reviewer
+- **Strimma** — basename contains `Strimma` (case-sensitive contains match). Dispatch `strimma-coroutine.md` and `strimma-medical.md`.
+- **Springa** — basename contains `Springa`. Dispatch `springa-api.md` and `springa-react.md`.
+- **Garmin/Connect IQ** — basename contains `garmin`. Dispatch `garmin-ciq.md`.
+- **Frontload** — basename is `frontload`, or a root package manifest identifies the project as `frontload`. Dispatch `frontload-core.md` and `frontload-integration.md`.
+- **Agent Plugins** — basename is `agent-plugins`, or the repo contains `.agents/plugins/marketplace.json` and `plugins/reviewer/`. Dispatch `agent-plugins.md`.
+- **Generic** — anything else. No domain reviewer.
 
 Domain reviewers run at Standard and Deep, never Quick.
+
+### Test Reviewer at Standard depth
+
+At **Standard** depth, run Test Reviewer when any changed file is source/logic (not only tests, documentation, comments-only changes, generated files, or lockfiles). Skip Test Reviewer at Standard when the scoped diff is exclusively Low-tier files of those kinds. At **Deep**, always include Test Reviewer.
 
 ## 6. Dispatch parallel reviewers
 
@@ -157,15 +156,18 @@ Identify the active harness and read the matching adapter completely:
 - Claude Code: `references/claude-code.md`
 - opencode: `references/opencode.md`
 
-Follow that adapter for parallel child dispatch, including its **child model floor**. Shared requirements for every harness:
+Follow that adapter for parallel child dispatch, including its **child model floor** and **prompt transport**. Shared requirements for every harness:
 
 1. Spawn one child per selected reviewer in one parallel batch.
 2. Apply the active harness adapter's required child model/effort (mid-tier workers by default — not frontier controller models) whenever the live schema allows explicit selection.
-3. Each child prompt includes the complete common reviewer contract, exactly one specialist reviewer prompt, the review mode and target revision, the one-line change summary, changed files with risk tiers, applicable repository guidance, the relevant patch or precise read-only retrieval instructions, and a requirement to return only the structured findings contract.
-4. Do not give reviewers write tasks.
-5. Wait for every selected reviewer before synthesis, then close completed reviewer threads when the harness exposes that capability.
-6. If one child fails, retry that role once with a narrower prompt; if it still fails, disclose the missing coverage.
-7. If subagent tools are unavailable, disclose that the specialist panel cannot run and ask whether to continue as a single-agent review. Do not silently simulate multiple reviewers.
+3. Deliver the complete common reviewer contract and exactly one specialist reviewer prompt by the harness transport:
+   - **Codex / Cursor:** inline both into the child prompt (plus mode/target, summary, tiered files, guidance, and patch or retrieval instructions). Prefer retrieval instructions over stuffing multi-thousand-line patches into every child.
+   - **Claude Code / opencode:** pass orchestration context only (mode/target, summary, tiered files, guidance, patch or retrieval instructions). The thin specialist shell loads contract + role via `${CLAUDE_PLUGIN_ROOT}` or the absolute `$SHARED_ROOT` the orchestrator injects. Do not re-inline those bodies in the child prompt.
+4. Every child must still receive the review mode and target revision, the one-line change summary, changed files with risk tiers, applicable repository guidance, the relevant patch or precise read-only retrieval instructions, and a requirement to return only the structured findings contract.
+5. Do not give reviewers write tasks.
+6. Wait for every selected reviewer before synthesis, then close completed reviewer threads when the harness exposes that capability.
+7. If one child fails, retry that role once with a narrower prompt; if it still fails, disclose the missing coverage.
+8. If subagent tools are unavailable, disclose that the specialist panel cannot run and ask whether to continue as a single-agent review. Do not silently simulate multiple reviewers.
 
 ## 7. Synthesize and score
 

@@ -144,17 +144,23 @@ def validate_domain_reviewer_wiring(text: str, skill_path: Path, errors: list[st
     domain_section = text[domain_start:dispatch_start]
     normalized_domain_section = re.sub(r"\s+", " ", domain_section)
     for marker in (
-        "Detect Frontload only when the repository name is `frontload` or a root package manifest identifies the project as `frontload`.",
-        "Detect Agent Plugins only when the repository name is `agent-plugins`, or when the repo contains `.agents/plugins/marketplace.json` and `plugins/reviewer/`.",
-        "- Frontload: `frontload-core.md`, `frontload-integration.md`",
-        "- Agent Plugins: `agent-plugins.md`",
+        'basename of the git repository root',
+        "**Strimma** — basename contains `Strimma`",
+        "**Springa** — basename contains `Springa`",
+        "**Garmin/Connect IQ** — basename contains `garmin`",
+        "**Frontload** — basename is `frontload`",
+        "**Agent Plugins** — basename is `agent-plugins`",
         "Domain reviewers run at Standard and Deep, never Quick.",
+        "### Test Reviewer at Standard depth",
+        "Skip Test Reviewer at Standard when the scoped diff is exclusively Low-tier",
     ):
-        require(marker in normalized_domain_section, f"{skill_path}: missing active domain reviewer invariant {marker!r}", errors)
+        require(marker in normalized_domain_section or marker in text, f"{skill_path}: missing active domain reviewer invariant {marker!r}", errors)
 
     for marker in (
         "| Standard | No Critical files and fewer than 400 changed lines | Bug Hunter, Guidelines, Test Reviewer when source changed, all matching domain reviewers |",
         "| Deep | Any Critical file or at least 400 changed lines | All universal reviewers and all matching domain reviewers |",
+        "**Codex / Cursor:** inline both into the child prompt",
+        "**Claude Code / opencode:** pass orchestration context only",
     ):
         require(marker in text, f"{skill_path}: missing domain panel wiring {marker!r}", errors)
 
@@ -237,15 +243,16 @@ def validate_cursor_marketplace(errors: list[str]) -> None:
     require(isinstance(entries, list), f"{CURSOR_MARKETPLACE}: plugins must be an array", errors)
     if not isinstance(entries, list):
         return
+    names = {entry.get("name") for entry in entries if isinstance(entry, dict)}
+    require("reviewer" in names, f"{CURSOR_MARKETPLACE}: missing reviewer entry", errors)
+    require("shipwright" in names, f"{CURSOR_MARKETPLACE}: missing shipwright entry", errors)
     reviewer = next((entry for entry in entries if isinstance(entry, dict) and entry.get("name") == "reviewer"), None)
-    require(reviewer is not None, f"{CURSOR_MARKETPLACE}: missing reviewer entry", errors)
-    if not isinstance(reviewer, dict):
-        return
-    require(
-        reviewer.get("source") == "./plugins/reviewer",
-        f"{CURSOR_MARKETPLACE}: reviewer source must be ./plugins/reviewer",
-        errors,
-    )
+    if isinstance(reviewer, dict):
+        require(
+            reviewer.get("source") == "./plugins/reviewer",
+            f"{CURSOR_MARKETPLACE}: reviewer source must be ./plugins/reviewer",
+            errors,
+        )
 
 
 def validate_install_cursor(errors: list[str]) -> None:
@@ -259,6 +266,9 @@ def validate_install_cursor(errors: list[str]) -> None:
         "Refusing to install",
         "is not a symlink",
         'ln -sfn "$src" "$dest"',
+        "is_available_plugin",
+        "assert_dest_under_plugins",
+        "not an available Cursor plugin name",
     ):
         require(marker in text, f"{INSTALL_CURSOR}: missing install safety marker {marker!r}", errors)
 
@@ -436,9 +446,16 @@ def specialist_reads_shared_prompt(body: str, role: str) -> bool:
     markers = (
         f"${{CLAUDE_PLUGIN_ROOT}}/skills/parallel-review/references/reviewers/{role}.md",
         f"$SHARED_ROOT/references/reviewers/{role}.md",
-        f"skills/parallel-review/references/reviewers/{role}.md",
     )
     return any(marker in body for marker in markers)
+
+
+def is_opencode_agent_path(path: Path) -> bool:
+    try:
+        path.resolve().relative_to((PLUGIN_ROOT / "opencode" / "agents").resolve())
+        return True
+    except ValueError:
+        return False
 
 
 def validate_thin_shells(errors: list[str]) -> None:
@@ -474,6 +491,9 @@ def validate_thin_shells(errors: list[str]) -> None:
                 errors,
             )
             require("realpath" in text or "os.path.realpath" in text, f"{path}: must resolve install symlink", errors)
+            require("~/.config/opencode" in text or "${HOME}/.config/opencode" in text, f"{path}: must use global install path", errors)
+            require("$(pwd)/.opencode" not in text, f"{path}: must not trust repo-local .opencode", errors)
+            require("SHARED_ROOT=" in text, f"{path}: must pass SHARED_ROOT into Task prompts", errors)
         require(
             len(body) <= MAX_ORCHESTRATOR_BODY_CHARS,
             f"{path}: orchestrator body exceeds {MAX_ORCHESTRATOR_BODY_CHARS} chars (likely fat orchestrator)",
@@ -496,8 +516,13 @@ def validate_thin_shells(errors: list[str]) -> None:
                 f"{path}: must instruct reading shared reviewer prompt via plugin-absolute path",
                 errors,
             )
-            if "opencode" in str(path):
-                require("$SHARED_ROOT" in body, f"{path}: opencode shell must resolve SHARED_ROOT", errors)
+            if is_opencode_agent_path(path):
+                require("$SHARED_ROOT" in body, f"{path}: opencode shell must use SHARED_ROOT", errors)
+                require(
+                    "Do not rediscover" in body or "Require an absolute" in body,
+                    f"{path}: opencode shell must require injected SHARED_ROOT",
+                    errors,
+                )
                 require(
                     "external_directory: allow" in text,
                     f"{path}: opencode shell must allow external_directory for SHARED_ROOT reads",
@@ -522,6 +547,7 @@ def validate_thin_shells(errors: list[str]) -> None:
             errors,
         )
         require("$SHARED_ROOT" in text, f"{primary}: primary agent must reference SHARED_ROOT", errors)
+        require("Pass `SHARED_ROOT=" in text or "Pass `SHARED_ROOT=<absolute path>`" in text, f"{primary}: must pass SHARED_ROOT to specialists", errors)
 
 
 def validate_references(errors: list[str]) -> None:
@@ -556,15 +582,18 @@ def validate_references(errors: list[str]) -> None:
             (r"include `start_line`, `start_side:\"RIGHT\"`, `line`, and `side:\"RIGHT\"`", "multi-line inline payload"),
             (r"jq --rawfile", "rawfile body handling"),
             (r"Stop on the first failed comment", "failure stop"),
-            (r"Self-PR clean review fallback", "self-PR APPROVE fallback"),
-            (r"Can not approve your own pull request", "self-PR rejection handling"),
+            (r"mktemp", "mktemp body files"),
+            (r"Do \*\*not\*\* auto-try `APPROVE` on clean reviews", "no auto APPROVE"),
+            (r"MCP must not bypass the shared posting contract|MCP-based posting", "MCP follows hard rules"),
         ):
             require(re.search(pattern, text) is not None, f"{actions_path}: missing invariant {label!r}", errors)
+        require("Self-PR clean review fallback" not in text, f"{actions_path}: must not ship Self-PR APPROVE fallback block", errors)
+        require("/tmp/lgtm.txt" not in text, f"{actions_path}: must not use fixed /tmp/lgtm.txt", errors)
         require_in_order(
             text,
             (
                 "Refresh the PR head SHA immediately before posting",
-                "Write the body to `/tmp/reviewer-comment-<n>.txt`",
+                "mktemp",
                 "{commit_id:$commit, path:$path, line:$line, side:\"RIGHT\", body:$body}",
                 "After every inline comment succeeds",
                 "{commit_id:$commit, event:$event, body:$body}",

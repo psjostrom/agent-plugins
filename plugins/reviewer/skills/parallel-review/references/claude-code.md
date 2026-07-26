@@ -39,7 +39,9 @@ Do not run specialist reviewers on Opus/frontier models unless the user passed `
 
 ## Spawn children
 
-Dispatch via Claude Code's `Agent` tool with `subagent_type` values from this table. Each specialist shell in `agents/<role>.md` reads the matching shared reviewer prompt via `${CLAUDE_PLUGIN_ROOT}`; the `prompt` you pass should contain only orchestration context (diff, tiered file list, one-line summary, repository guidance).
+Dispatch via Claude Code's `Agent` tool with `subagent_type` values from this table.
+
+**Prompt transport:** pass orchestration context only (mode/target, summary, tiered file list, guidance, patch or retrieval instructions). Each specialist shell loads the contract and role via `${CLAUDE_PLUGIN_ROOT}` — do not inline those bodies into the Agent prompt.
 
 | Role | `subagent_type` | Shared prompt |
 | --- | --- | --- |
@@ -63,4 +65,4 @@ If the `Agent` tool is unavailable, disclose that the specialist panel cannot ru
 
 ## GitHub posting
 
-After the decision gate, PR fixes and inline comment posting may use Claude GitHub MCP tools where available, or follow `${CLAUDE_PLUGIN_ROOT}/skills/parallel-review/references/github-actions.md` for standalone `gh api` posting.
+After the decision gate, follow `${CLAUDE_PLUGIN_ROOT}/skills/parallel-review/references/github-actions.md` for every posting path. Claude GitHub MCP tools may be used only as a transport that still obeys those hard rules (head SHA refresh, one comment at a time, default `COMMENT`, explicit user authorization for `APPROVE` / `REQUEST_CHANGES`, no stderr hiding, stop on first failure). MCP must not bypass the shared posting contract.

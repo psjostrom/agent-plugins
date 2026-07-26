@@ -6,13 +6,13 @@ Read this file completely only when parallel review is running in opencode. The 
 
 You are in **opencode** when the user invokes `/parallel-review` on the primary `reviewer` agent from this plugin.
 
-Never load shared reviewer files relative to the reviewed repository. Always resolve `$SHARED_ROOT` from the installed plugin symlink first.
+Never load shared reviewer files relative to the reviewed repository. Resolve `$SHARED_ROOT` only from the global install symlink under `~/.config/opencode` as specified in `opencode/commands/parallel-review.md`.
 
 ## Orchestrator entry
 
 The thin command shell is `opencode/commands/parallel-review.md`. It parses opencode-specific flags, then you execute the shared workflow.
 
-`install-opencode.sh` symlinks `plugins/reviewer/opencode/` (including `skills` → `../skills`) into `~/.config/opencode/` or `.opencode/`. Shared files are **not** in the reviewed repository. Resolve `$SHARED_ROOT` by following the installed `commands/parallel-review.md` symlink into this plugin, then `../../skills/parallel-review`, and Read absolute paths under that root. Stop with an install instruction if `$SHARED_ROOT` cannot be resolved.
+`install-opencode.sh` symlinks `plugins/reviewer/opencode/` (including `skills` → `../skills`) into `~/.config/opencode/`. Shared files are **not** in the reviewed repository. Stop with an install instruction if `$SHARED_ROOT` cannot be resolved from the trusted global symlink.
 
 Reviewer agent frontmatter must set `external_directory: allow` so `$SHARED_ROOT` reads succeed outside the reviewed checkout. Keep specialist `edit: deny` and other write-denials.
 
@@ -44,7 +44,15 @@ Use the same mid-tier model for any domain reviewers you enable. Do not default 
 
 ## Spawn children
 
-Dispatch via opencode's `Task` tool with bare agent names matching `opencode/agents/<role>.md`. Each specialist shell resolves `$SHARED_ROOT` the same way and reads `$SHARED_ROOT/references/reviewers/<role>.md`; the `prompt` you pass should contain only orchestration context (diff, tiered file list, one-line summary, repository guidance).
+Dispatch via opencode's `Task` tool with bare agent names matching `opencode/agents/<role>.md`.
+
+**Prompt transport:** pass orchestration context only, and always include the absolute path the orchestrator already resolved:
+
+```text
+SHARED_ROOT=<absolute path from orchestrator resolution>
+```
+
+Also include mode/target, summary, tiered files, guidance, and patch or retrieval instructions. Do **not** require specialists to rediscover `$SHARED_ROOT` (most have `bash: deny`). Each specialist shell reads `$SHARED_ROOT/references/reviewer-contract.md` and `$SHARED_ROOT/references/reviewers/<role>.md` using that injected absolute path.
 
 | Role | `subagent_type` | Shared prompt |
 | --- | --- | --- |

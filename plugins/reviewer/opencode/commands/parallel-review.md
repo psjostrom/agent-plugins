@@ -11,20 +11,24 @@ agent: reviewer
 
 You are the **opencode** orchestrator for parallel review on the `reviewer` primary agent.
 
-Resolve the shared skill root first (installed command is a symlink into this plugin):
+Resolve the shared skill root from the **global** install symlink only (never from the reviewed repository):
 
 ```bash
 SHARED_ROOT=""
-for base in "${HOME}/.config/opencode" "$(pwd)/.opencode"; do
-  f="$base/commands/parallel-review.md"
-  if [ -e "$f" ]; then
-    real=$(python3 -c 'import os,sys; print(os.path.realpath(sys.argv[1]))' "$f")
-    SHARED_ROOT=$(cd "$(dirname "$real")/../../skills/parallel-review" && pwd)
-    break
-  fi
-done
-if [ -z "$SHARED_ROOT" ] || [ ! -f "$SHARED_ROOT/SKILL.md" ]; then
-  echo "Could not resolve shared parallel-review skill root. Run ./install-opencode.sh install reviewer first." >&2
+f="${HOME}/.config/opencode/commands/parallel-review.md"
+if [ -L "$f" ]; then
+  real=$(python3 -c 'import os,sys; print(os.path.realpath(sys.argv[1]))' "$f")
+  case "$real" in
+    */plugins/reviewer/opencode/commands/parallel-review.md)
+      candidate=$(cd "$(dirname "$real")/../../skills/parallel-review" && pwd)
+      if [ -f "$candidate/SKILL.md" ] && [ -d "$candidate/references/reviewers" ]; then
+        SHARED_ROOT="$candidate"
+      fi
+      ;;
+  esac
+fi
+if [ -z "$SHARED_ROOT" ]; then
+  echo "Could not resolve shared parallel-review skill root from ~/.config/opencode. Run ./install-opencode.sh install reviewer first." >&2
   exit 1
 fi
 printf 'SHARED_ROOT=%s\n' "$SHARED_ROOT"
@@ -44,3 +48,5 @@ Before following the shared workflow, parse `$ARGUMENTS`:
 - Remove recognized flags; use the remainder for shared input parsing (PR number/URL, branch/base comparison, or empty for local/current PR)
 
 Then execute the shared workflow end-to-end. Do not duplicate triage tables, scoring rubrics, or posting recipes here.
+
+When dispatching specialists, include the absolute `SHARED_ROOT=<path>` line in every Task prompt so bash-denied children do not rediscover it.

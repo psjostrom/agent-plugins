@@ -44,17 +44,23 @@ Claude Code session. To install from a local checkout, replace
 
 ### Cursor
 
-Symlink Shipwright into Cursor's local plugin directory from this repository
-root:
+From a local checkout, symlink plugins that have a `.cursor-plugin/` surface:
 
 ```sh
+git clone https://github.com/psjostrom/agent-plugins.git
+cd agent-plugins
+./install-cursor.sh install reviewer
 ./install-cursor.sh install shipwright
+./install-cursor.sh list
 ```
 
 Reload the Cursor window afterward. Shipwright requires Superpowers 6.1.1 or
-newer as a separate Cursor plugin. Uninstall with:
+newer as a separate Cursor plugin. Invoke reviewer explicitly — for example
+"use parallel-review" or `/parallel-review` when Cursor surfaces the slash
+command. Uninstall with:
 
 ```sh
+./install-cursor.sh uninstall reviewer
 ./install-cursor.sh uninstall shipwright
 ```
 
@@ -76,28 +82,3 @@ installation, run the installer from that repository and pass `--project`:
 /path/to/agent-plugins/install-opencode.sh install reviewer --project
 ```
 
-### Cursor
-
-Install reviewer (and any other Cursor-packaged plugins) from a local checkout:
-
-```sh
-git clone https://github.com/psjostrom/agent-plugins.git
-cd agent-plugins
-./install-cursor.sh install reviewer
-```
-
-List available plugins and install state:
-
-```sh
-./install-cursor.sh list
-```
-
-Uninstall:
-
-```sh
-./install-cursor.sh uninstall reviewer
-```
-
-Invoke parallel review explicitly in Cursor — for example "use parallel-review"
-or `/parallel-review` when Cursor surfaces the slash command. The skill does
-not auto-invoke from ambient chat.

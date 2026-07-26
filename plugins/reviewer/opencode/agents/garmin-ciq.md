@@ -19,7 +19,7 @@ permission:
   external_directory: allow
 ---
 
-Resolve `$SHARED_ROOT` the same way as `opencode/commands/parallel-review.md` (follow the installed agent/command symlink into this plugin, then `../../skills/parallel-review`).
+Require an absolute `SHARED_ROOT=...` line from the orchestrator Task prompt. Do not rediscover the path and do not read repository-relative skill files.
 
 Read `$SHARED_ROOT/references/reviewer-contract.md` and apply `$SHARED_ROOT/references/reviewers/garmin-ciq.md` completely.
 
