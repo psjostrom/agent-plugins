@@ -303,7 +303,27 @@ class ShipwrightValidatorTests(unittest.TestCase):
     ) -> None:
         runbook_path = "plugins/shipwright/evals/v1/cursor-runbook.md"
         original = self.path(runbook_path).read_text(encoding="utf-8")
-        for marker in validator.CURSOR_CHECKED_SETUP:
+        checked_steps = (
+            '  shipwright_setup_step="resolve checkout"\n  shipwright_checkout="$(pwd -P)" || return 1',
+            '  shipwright_setup_step="read commit"\n  shipwright_commit="$(git -C "$shipwright_checkout" rev-parse HEAD)" || return 1',
+            '  shipwright_setup_step="read status"\n  shipwright_status="$(git -C "$shipwright_checkout" status --short)" || return 1',
+            '  shipwright_setup_step="resolve Superpowers plugin root"\n  superpowers_plugin_dir="${SUPERPOWERS_PLUGIN_DIR:-}"\n  [ -d "$superpowers_plugin_dir" ] || return 1',
+            '  shipwright_setup_step="create fixture"\n  fixture_root="$(mktemp -d)" || return 1',
+            '  shipwright_setup_step="initialize fixture repository"\n  git -C "$fixture_root" init >/dev/null || return 1',
+            '  shipwright_setup_step="create evaluation input directory"\n  mkdir -p "$fixture_root/evaluation-input" || return 1',
+            '  shipwright_setup_step="copy runbook"\n  cp "$shipwright_checkout/plugins/shipwright/evals/v1/cursor-runbook.md" \\\n    "$fixture_root/evaluation-input/cursor-runbook.md" || return 1',
+            '  shipwright_setup_step="copy scenarios"\n  cp "$shipwright_checkout/plugins/shipwright/evals/v1/scenarios.md" \\\n    "$fixture_root/evaluation-input/scenarios.md" || return 1',
+            '  shipwright_setup_step="exclude evidence"\n  printf \'%s\\n\' \'.superpowers/\' >> "$fixture_root/.git/info/exclude" || return 1',
+            '  shipwright_setup_step="create evidence directories"\n  mkdir -p "$evidence_dir" || return 1',
+            '  shipwright_setup_step="stage fixture-local Cursor plugin path"\n  cursor_plugins_local="$fixture_root/.cursor/plugins/local"\n  mkdir -p "$cursor_plugins_local" || return 1\n  ln -sfn "$shipwright_checkout/plugins/shipwright" "$cursor_plugins_local/shipwright" || return 1',
+            '  shipwright_setup_step="write commit seed"\n  printf \'shipwright_commit=%s\\n\' "$shipwright_commit" > "$environment_seed" || return 1',
+            '  shipwright_setup_step="write status seed"\n  printf \'shipwright_status=%s\\n\' "$shipwright_status" >> "$environment_seed" || return 1',
+            '  shipwright_setup_step="write plugin seed"\n  printf \'shipwright_plugin_source=%s\\n\' "$shipwright_checkout/plugins/shipwright" >> "$environment_seed" || return 1',
+            '  shipwright_setup_step="write cursor plugins seed"\n  printf \'cursor_plugins_local=%s\\n\' "$cursor_plugins_local" >> "$environment_seed" || return 1',
+            '  shipwright_setup_step="write evidence seed"\n  printf \'evidence_dir=%s\\n\' "$evidence_dir" >> "$environment_seed" || return 1',
+            '  shipwright_setup_step="verify evidence exclusion"\n  git -C "$fixture_root" check-ignore -q "$evidence_dir" || return 1',
+        )
+        for marker in checked_steps:
             with self.subTest(step=marker.splitlines()[0]):
                 self.assertIn(marker, original)
                 unguarded = marker.replace(" || return 1", "")
