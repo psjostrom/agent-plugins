@@ -10,10 +10,24 @@ You are in **Codex** when the active plugin exposes `$parallel-review` / the `pa
 
 Use Codex built-in subagent dispatch. Inspect the live tool schema before calling it.
 
+### Child model floor (required)
+
+Specialist reviewers are parallel, structured, read-only workers. Prefer Terra over Sol.
+
+| Role class | Required child model | Required effort |
+| --- | --- | --- |
+| All selected specialist reviewers | `gpt-5.6-terra` | `medium` |
+
+Rules:
+
 - Spawn one built-in Codex subagent per selected reviewer in one parallel batch.
 - Prefer self-contained child threads without full-history inheritance (`fork_context: false` when the tool exposes that field).
 - Prefer a read-oriented agent type, but never combine an explicit agent type, model, or reasoning override with a full-history fork.
-- Pass explicit model or effort fields only when the live schema exposes them; never fabricate unsupported arguments.
+- When the live spawn schema exposes `model` and `reasoning_effort` (or equivalent effort field), pass both: `gpt-5.6-terra` + `medium`. Specifying only the model is not enough.
+- Do not let specialists inherit a Sol/high/max controller by omission.
+- Never select `gpt-5.6-sol` (or higher effort than medium) for specialist children unless the user explicitly overrides the reviewer model for that run.
+- If the schema hides model/effort selectors, disclose the limitation, ask whether to continue with inherited children, and do not claim Terra/medium workers ran.
+- Never fabricate unsupported arguments.
 
 Each child prompt must inline:
 

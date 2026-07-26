@@ -25,9 +25,17 @@ Always load shared files with `${CLAUDE_PLUGIN_ROOT}` so paths resolve from the 
 
 Parse `$ARGUMENTS` before shared workflow steps:
 
-- `--opus` → subagent model **opus** (default **sonnet**)
+- `--opus` → subagent model **opus** (explicit user override only)
 - `--deep` / `--quick` → depth overrides (`--deep` wins if both are present)
 - Remove recognized flags; pass the remainder to shared input parsing as PR number/URL, branch/base comparison, or empty for local/current PR discovery
+
+### Child model floor (required)
+
+| Role class | Default child model | Override |
+| --- | --- | --- |
+| All selected specialist reviewers | **sonnet** | **opus** only when `--opus` is present |
+
+Do not run specialist reviewers on Opus/frontier models unless the user passed `--opus`. Orchestrator cost trimming (for example launching with Sonnet) must not be undone by spawning Opus children by default.
 
 ## Spawn children
 
@@ -49,7 +57,7 @@ Dispatch via Claude Code's `Agent` tool with `subagent_type` values from this ta
 | Frontload Integration & Safety | `reviewer:frontload-integration` | `frontload-integration.md` |
 | Agent Plugins Surface Parity | `reviewer:agent-plugins` | `agent-plugins.md` |
 
-Launch every selected reviewer in one parallel response. Use the model chosen during argument parsing.
+Launch every selected reviewer in one parallel response. Pass the child model from the floor above (sonnet unless `--opus`).
 
 If the `Agent` tool is unavailable, disclose that the specialist panel cannot run and ask whether to continue as a single-agent review.
 

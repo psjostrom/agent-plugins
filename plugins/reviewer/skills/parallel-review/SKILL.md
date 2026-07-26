@@ -157,14 +157,15 @@ Identify the active harness and read the matching adapter completely:
 - Claude Code: `references/claude-code.md`
 - opencode: `references/opencode.md`
 
-Follow that adapter for parallel child dispatch. Shared requirements for every harness:
+Follow that adapter for parallel child dispatch, including its **child model floor**. Shared requirements for every harness:
 
 1. Spawn one child per selected reviewer in one parallel batch.
-2. Each child prompt includes the complete common reviewer contract, exactly one specialist reviewer prompt, the review mode and target revision, the one-line change summary, changed files with risk tiers, applicable repository guidance, the relevant patch or precise read-only retrieval instructions, and a requirement to return only the structured findings contract.
-3. Do not give reviewers write tasks.
-4. Wait for every selected reviewer before synthesis, then close completed reviewer threads when the harness exposes that capability.
-5. If one child fails, retry that role once with a narrower prompt; if it still fails, disclose the missing coverage.
-6. If subagent tools are unavailable, disclose that the specialist panel cannot run and ask whether to continue as a single-agent review. Do not silently simulate multiple reviewers.
+2. Apply the active harness adapter's required child model/effort (mid-tier workers by default — not frontier controller models) whenever the live schema allows explicit selection.
+3. Each child prompt includes the complete common reviewer contract, exactly one specialist reviewer prompt, the review mode and target revision, the one-line change summary, changed files with risk tiers, applicable repository guidance, the relevant patch or precise read-only retrieval instructions, and a requirement to return only the structured findings contract.
+4. Do not give reviewers write tasks.
+5. Wait for every selected reviewer before synthesis, then close completed reviewer threads when the harness exposes that capability.
+6. If one child fails, retry that role once with a narrower prompt; if it still fails, disclose the missing coverage.
+7. If subagent tools are unavailable, disclose that the specialist panel cannot run and ask whether to continue as a single-agent review. Do not silently simulate multiple reviewers.
 
 ## 7. Synthesize and score
 

@@ -43,7 +43,7 @@ use parallel-review to review the current local changes with a quick review
 /parallel-review
 ```
 
-Cursor dispatches reviewers via the `Task` tool with inlined shared prompts. Review stays read-only until findings are reported and you choose an action.
+Cursor dispatches reviewers via the `Task` tool with inlined shared prompts. Specialist children must use `composer-2.5-fast` (not frontier Grok). Review stays read-only until findings are reported and you choose an action.
 
 ## opencode
 
@@ -117,7 +117,7 @@ Use $parallel-review to review local changes under src/auth.
 Use $parallel-review to review PR #6 deeply, limited to apps/web and packages/api.
 ```
 
-The skill reviews PRs, branch comparisons, staged/unstaged/untracked local changes, or those targets restricted to repository-relative files and directories. It chooses Quick, Standard, or Deep depth from the scoped diff risk and size. It remains read-only until it reports findings and you select which issues to fix or post as GitHub comments. It never merges a pull request.
+The skill reviews PRs, branch comparisons, staged/unstaged/untracked local changes, or those targets restricted to repository-relative files and directories. It chooses Quick, Standard, or Deep depth from the scoped diff risk and size. Specialist children default to `gpt-5.6-terra` at `medium` effort (not Sol/frontier). It remains read-only until it reports findings and you select which issues to fix or post as GitHub comments. It never merges a pull request.
 
 For Standard and Deep reviews, Codex auto-detects Strimma, Springa, Garmin
 Connect IQ, Frontload, and agent-plugins repositories and adds the matching
@@ -128,7 +128,7 @@ integration-safety agents.
 
 Use `/reviewer:review` or its `/r` alias.
 
-Multi-agent code review with scored issues. Reviews a PR or local diff; scores every finding; then fixes directly or posts inline PR comments. Auto-detects the project (Strimma, Springa, Garmin CIQ, Frontload, agent-plugins) and adds matching domain agents.
+Multi-agent code review with scored issues. Reviews a PR or local diff; scores every finding; then fixes directly or posts inline PR comments. Specialist agents default to Sonnet (`--opus` opt-in). Auto-detects the project (Strimma, Springa, Garmin CIQ, Frontload, agent-plugins) and adds matching domain agents.
 
 ```
 /r <pr-number>   # review a PR

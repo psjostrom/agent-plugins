@@ -339,6 +339,11 @@ def validate_harness_adapters(errors: list[str]) -> None:
         if not path.exists():
             continue
         text = path.read_text(encoding="utf-8")
+        require(
+            "### Child model floor (required)" in text,
+            f"{path}: missing child model floor section",
+            errors,
+        )
         for role in sorted(REVIEWER_NAMES):
             require(
                 f"{role}.md`" in text,
@@ -349,6 +354,22 @@ def validate_harness_adapters(errors: list[str]) -> None:
     if codex_path.exists():
         text = codex_path.read_text(encoding="utf-8")
         require("fork_context: false" in text, f"{codex_path}: must require self-contained subagent threads", errors)
+        require("gpt-5.6-terra" in text, f"{codex_path}: must require Terra child model", errors)
+        require("medium" in text, f"{codex_path}: must require medium child effort", errors)
+    cursor_path = SKILL_ROOT / "references" / "cursor.md"
+    if cursor_path.exists():
+        text = cursor_path.read_text(encoding="utf-8")
+        require("composer-2.5-fast" in text, f"{cursor_path}: must require Composer child model", errors)
+        require("cursor-grok" in text.lower() or "frontier Grok" in text, f"{cursor_path}: must forbid frontier Grok children", errors)
+    claude_path = SKILL_ROOT / "references" / "claude-code.md"
+    if claude_path.exists():
+        text = claude_path.read_text(encoding="utf-8")
+        require("**sonnet**" in text, f"{claude_path}: must default specialists to sonnet", errors)
+    opencode_path = SKILL_ROOT / "references" / "opencode.md"
+    if opencode_path.exists():
+        text = opencode_path.read_text(encoding="utf-8")
+        require("opencode.json" in text, f"{opencode_path}: must document mid-tier opencode.json models", errors)
+        require("Do not default specialists to Opus" in text, f"{opencode_path}: must forbid Opus defaults", errors)
 
 
 def validate_reviewers(errors: list[str]) -> None:

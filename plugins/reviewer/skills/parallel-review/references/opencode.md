@@ -20,9 +20,27 @@ Reviewer agent frontmatter must set `external_directory: allow` so `$SHARED_ROOT
 
 Parse `$ARGUMENTS` before shared workflow steps:
 
-- `--opus` → remove from the argument string and note that opencode configures subagent models in `opencode.json`, not per-call flags
+- `--opus` → remove from the argument string and note that opencode configures subagent models in `opencode.json`, not per-call flags (`--opus` does not change the child model here)
 - `--deep` / `--quick` → depth overrides (`--deep` wins if both are present)
 - Remove recognized flags; pass the remainder to shared input parsing as PR number/URL, branch/base comparison, or empty for local/current PR discovery
+
+### Child model floor (required)
+
+opencode Task calls do not take per-call model overrides. Configure specialist agents to a Sonnet-class (or equivalent mid-tier) model in `opencode.json`, not Opus/frontier defaults:
+
+```json
+{
+  "agent": {
+    "bug-hunter": { "model": "anthropic/claude-sonnet-4-20250514" },
+    "guidelines": { "model": "anthropic/claude-sonnet-4-20250514" },
+    "error-edges": { "model": "anthropic/claude-sonnet-4-20250514" },
+    "architecture": { "model": "anthropic/claude-sonnet-4-20250514" },
+    "test-reviewer": { "model": "anthropic/claude-sonnet-4-20250514" }
+  }
+}
+```
+
+Use the same mid-tier model for any domain reviewers you enable. Do not default specialists to Opus. Announce when child models are controlled only by `opencode.json`.
 
 ## Spawn children
 
