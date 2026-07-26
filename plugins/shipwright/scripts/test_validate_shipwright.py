@@ -195,14 +195,55 @@ class ShipwrightValidatorTests(unittest.TestCase):
         runbook_path = "plugins/shipwright/evals/v1/cursor-runbook.md"
         required_markers = (
             "## Prerequisites",
+            "## Safety boundaries",
             "## Copy/paste prompt for Cursor",
-            "Use /shipwright only",
+            "## Required cases and repetitions",
+            "## Evidence bundle",
+            "## Result rubric",
+            "## Return template",
+            "plugin skill discovery, Task subagents, and current-turn model/effort evidence",
+            "Superpowers 6.1.1 or newer",
             "Grok 4.5",
             "high or stronger",
+            "one broad smoke pass",
+            "3/3 exact passes",
+            "at least 2/3 intended",
+            "3/3 safe choices",
+            "PASS",
+            "FAIL",
+            "UNVERIFIED",
+            "disposable fixture repository",
+            "credentials",
+            "paid external services",
+            "must not modify Shipwright",
+            'shipwright_checkout="$(pwd -P)"',
+            'shipwright_status="<clean>"',
+            'fixture_root="$(mktemp -d)"',
+            'git -C "$fixture_root" init',
+            "evaluation-input/cursor-runbook.md",
+            "evaluation-input/scenarios.md",
+            'environment_seed="$fixture_root/evaluation-input/environment-seed.md"',
+            "printf 'shipwright_commit=%s\\n' \"$shipwright_commit\" > \"$environment_seed\"",
+            "printf 'shipwright_status=%s\\n' \"$shipwright_status\" >> \"$environment_seed\"",
+            "printf 'shipwright_plugin_source=%s\\n' \"$shipwright_checkout/plugins/shipwright\" >> \"$environment_seed\"",
+            "printf 'cursor_plugins_local=%s\\n' \"$cursor_plugins_local\" >> \"$environment_seed\"",
+            "printf 'evidence_dir=%s\\n' \"$evidence_dir\" >> \"$environment_seed\"",
+            "Read evaluation-input/environment-seed.md along with",
+            "Failure to create or read environment-seed.md makes the evaluation `UNVERIFIED`.",
             "shipwright_prepare_cursor_evaluation() {",
-            "Do not run install-cursor.sh against the host ~/.cursor/plugins/local during setup",
-            "fixture-local plugin symlink loading route",
+            "SUPERPOWERS_PLUGIN_DIR",
             'cursor_plugins_local="$fixture_root/.cursor/plugins/local"',
+            'ln -sfn "$shipwright_checkout/plugins/shipwright" "$cursor_plugins_local/shipwright"',
+            "Do not run install-cursor.sh against the host ~/.cursor/plugins/local during setup",
+            "If Superpowers is below 6.1.1, stop and mark the evaluation `UNVERIFIED`.",
+            "Stop and report UNVERIFIED if Cursor lacks plugin discovery, Task subagents, or current-turn model evidence, Superpowers is below 6.1.1",
+            "Accept compatible newer Cursor and Superpowers versions.",
+            "below-minimum Superpowers version is active; Cursor lacks plugin discovery",
+            ".git/info/exclude",
+            'git -C "$fixture_root" check-ignore -q "$evidence_dir"',
+            "fixture-local plugin symlink loading route",
+            'evidence_dir="$fixture_root/.superpowers/sdd/evals/$run_id"',
+            "Failure of copy/setup, ignore verification, fixture-local plugin staging, or fixture-rooted plugin loading",
         )
         for index, marker in enumerate(required_markers):
             with self.subTest(marker=marker):
@@ -248,6 +289,21 @@ class ShipwrightValidatorTests(unittest.TestCase):
             '  shipwright_setup_step="verify evidence exclusion"\n  git -C "$fixture_root" check-ignore -q "$evidence_dir" || return 1',
         )
         for marker in checked_steps:
+            with self.subTest(step=marker.splitlines()[0]):
+                self.assertIn(marker, original)
+                unguarded = marker.replace(" || return 1", "")
+                self.path(runbook_path).write_text(
+                    original.replace(marker, unguarded, 1), encoding="utf-8"
+                )
+                self.assert_error("checked setup")
+        self.path(runbook_path).write_text(original, encoding="utf-8")
+
+    def test_requires_each_cursor_fixture_setup_operation_to_be_checked_and_tracked(
+        self,
+    ) -> None:
+        runbook_path = "plugins/shipwright/evals/v1/cursor-runbook.md"
+        original = self.path(runbook_path).read_text(encoding="utf-8")
+        for marker in validator.CURSOR_CHECKED_SETUP:
             with self.subTest(step=marker.splitlines()[0]):
                 self.assertIn(marker, original)
                 unguarded = marker.replace(" || return 1", "")
