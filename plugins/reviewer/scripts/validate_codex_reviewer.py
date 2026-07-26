@@ -380,6 +380,16 @@ def validate_harness_adapters(errors: list[str]) -> None:
         text = opencode_path.read_text(encoding="utf-8")
         require("opencode.json" in text, f"{opencode_path}: must document mid-tier opencode.json models", errors)
         require("Do not default specialists to Opus" in text, f"{opencode_path}: must forbid Opus defaults", errors)
+        require(
+            injects_shared_root_into_task_prompt(text),
+            f"{opencode_path}: must require absolute SHARED_ROOT in the Task prompt payload",
+            errors,
+        )
+        require(
+            "require specialists to rediscover" in text,
+            f"{opencode_path}: must forbid specialist SHARED_ROOT rediscovery",
+            errors,
+        )
 
 
 def validate_reviewers(errors: list[str]) -> None:
@@ -450,6 +460,16 @@ def specialist_reads_shared_prompt(body: str, role: str) -> bool:
     return any(marker in body for marker in markers)
 
 
+def injects_shared_root_into_task_prompt(text: str) -> bool:
+    """True when text requires absolute SHARED_ROOT in the specialist Task payload."""
+    markers = (
+        "SHARED_ROOT=<absolute path from orchestrator resolution>",
+        "Pass `SHARED_ROOT=<absolute path>` in every specialist Task prompt",
+        "include the absolute `SHARED_ROOT=<path>` line in every Task prompt",
+    )
+    return any(marker in text for marker in markers)
+
+
 def is_opencode_agent_path(path: Path) -> bool:
     try:
         path.resolve().relative_to((PLUGIN_ROOT / "opencode" / "agents").resolve())
@@ -493,7 +513,11 @@ def validate_thin_shells(errors: list[str]) -> None:
             require("realpath" in text or "os.path.realpath" in text, f"{path}: must resolve install symlink", errors)
             require("~/.config/opencode" in text or "${HOME}/.config/opencode" in text, f"{path}: must use global install path", errors)
             require("$(pwd)/.opencode" not in text, f"{path}: must not trust repo-local .opencode", errors)
-            require("SHARED_ROOT=" in text, f"{path}: must pass SHARED_ROOT into Task prompts", errors)
+            require(
+                injects_shared_root_into_task_prompt(text),
+                f"{path}: must instruct injecting absolute SHARED_ROOT into every Task prompt payload",
+                errors,
+            )
         require(
             len(body) <= MAX_ORCHESTRATOR_BODY_CHARS,
             f"{path}: orchestrator body exceeds {MAX_ORCHESTRATOR_BODY_CHARS} chars (likely fat orchestrator)",
@@ -547,7 +571,11 @@ def validate_thin_shells(errors: list[str]) -> None:
             errors,
         )
         require("$SHARED_ROOT" in text, f"{primary}: primary agent must reference SHARED_ROOT", errors)
-        require("Pass `SHARED_ROOT=" in text or "Pass `SHARED_ROOT=<absolute path>`" in text, f"{primary}: must pass SHARED_ROOT to specialists", errors)
+        require(
+            injects_shared_root_into_task_prompt(text),
+            f"{primary}: must instruct injecting absolute SHARED_ROOT into every specialist Task prompt",
+            errors,
+        )
 
 
 def validate_references(errors: list[str]) -> None:
@@ -585,6 +613,10 @@ def validate_references(errors: list[str]) -> None:
             (r"mktemp", "mktemp body files"),
             (r"Do \*\*not\*\* auto-try `APPROVE` on clean reviews", "no auto APPROVE"),
             (r"MCP must not bypass the shared posting contract|MCP-based posting", "MCP follows hard rules"),
+            (r"### Summary review body", "summary body section"),
+            (r"not the skill or tool name", "summary forbids skill/tool naming"),
+            (r"Do not refer to chat-report numbering", "summary forbids finding-number refs"),
+            (r"Do not add process filler", "summary forbids process filler"),
         ):
             require(re.search(pattern, text) is not None, f"{actions_path}: missing invariant {label!r}", errors)
         require("Self-PR clean review fallback" not in text, f"{actions_path}: must not ship Self-PR APPROVE fallback block", errors)

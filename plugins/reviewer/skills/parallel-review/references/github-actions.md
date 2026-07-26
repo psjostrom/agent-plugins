@@ -76,7 +76,10 @@ After every inline comment succeeds, write the summary body to a `mktemp` file a
 SUMMARY=$(mktemp)
 trap 'rm -f "$SUMMARY"' EXIT
 cat > "$SUMMARY" <<'EOF'
-Brief review summary.
+Review notes on <short scope>.
+
+Main themes:
+- <plain-language theme from the posted comments>
 EOF
 ID=$(
   jq -n \
@@ -90,6 +93,15 @@ ID=$(
       --jq '.id'
 ) && test -n "$ID" && printf 'OK review id=%s\n' "$ID"
 ```
+
+### Summary review body
+
+Write for people reading the PR on GitHub. Keep it short; the inline comments carry the detail.
+
+- Open with what was reviewed (PR/change scope), not the skill or tool name (`parallel-review`, "Parallel review", etc.).
+- Summarize the substantive themes of the **posted** comments in plain language.
+- Do not refer to chat-report numbering (`findings 1–12`, "selected findings", and similar). Those numbers exist only in the orchestrator report.
+- Do not add process filler ("No merge from this review", "Happy to iterate…", and similar). Omit anything that is not useful to the PR author.
 
 ### Comment body
 

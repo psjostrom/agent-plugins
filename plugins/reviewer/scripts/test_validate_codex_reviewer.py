@@ -138,6 +138,38 @@ class ThinShellTests(unittest.TestCase):
         finally:
             path.write_text(original, encoding="utf-8")
 
+    def test_rejects_shared_root_shell_assignment_without_task_injection(self) -> None:
+        path = VALIDATOR.PLUGIN_ROOT / "opencode" / "commands" / "parallel-review.md"
+        original = path.read_text(encoding="utf-8")
+        weakened = original.replace(
+            "include the absolute `SHARED_ROOT=<path>` line in every Task prompt so bash-denied children do not rediscover it.",
+            "Set SHARED_ROOT= locally before continuing.",
+        )
+        try:
+            path.write_text(weakened, encoding="utf-8")
+            errors: list[str] = []
+            VALIDATOR.validate_thin_shells(errors)
+            self.assertTrue(any("Task prompt payload" in error for error in errors))
+        finally:
+            path.write_text(original, encoding="utf-8")
+
+    def test_rejects_opencode_adapter_without_task_shared_root_payload(self) -> None:
+        path = VALIDATOR.SKILL_ROOT / "references" / "opencode.md"
+        original = path.read_text(encoding="utf-8")
+        try:
+            path.write_text(
+                original.replace(
+                    "SHARED_ROOT=<absolute path from orchestrator resolution>",
+                    "SHARED_ROOT=$HOME/.config/opencode/skills/parallel-review",
+                ),
+                encoding="utf-8",
+            )
+            errors: list[str] = []
+            VALIDATOR.validate_harness_adapters(errors)
+            self.assertTrue(any("Task prompt payload" in error for error in errors))
+        finally:
+            path.write_text(original, encoding="utf-8")
+
 
 class CursorPackagingTests(unittest.TestCase):
     def test_accepts_cursor_manifest_and_marketplace(self) -> None:
