@@ -58,6 +58,7 @@ class ReviewerParityTests(unittest.TestCase):
             codex_reviewers={"bug-hunter", "frontload-core"},
             claude_reviewers={"bug-hunter"},
             opencode_reviewers={"bug-hunter", "frontload-core"},
+            cursor_reviewers={"bug-hunter", "frontload-core"},
             errors=errors,
         )
 
@@ -69,10 +70,24 @@ class ReviewerParityTests(unittest.TestCase):
             codex_reviewers={"bug-hunter", "frontload-core"},
             claude_reviewers={"bug-hunter", "frontload-core"},
             opencode_reviewers={"bug-hunter"},
+            cursor_reviewers={"bug-hunter", "frontload-core"},
             errors=errors,
         )
 
         self.assertIn("missing opencode reviewer agents: frontload-core", errors)
+
+    def test_rejects_reviewer_missing_from_cursor_surface(self) -> None:
+        errors: list[str] = []
+        VALIDATOR.validate_reviewer_surface_parity(
+            codex_reviewers={"bug-hunter", "frontload-core"},
+            claude_reviewers={"bug-hunter", "frontload-core"},
+            opencode_reviewers={"bug-hunter", "frontload-core"},
+            cursor_reviewers={"bug-hunter"},
+            errors=errors,
+            expected_reviewers={"bug-hunter", "frontload-core"},
+        )
+
+        self.assertIn("missing Cursor reviewer roles: frontload-core", errors)
 
 
 class SharedCoreTests(unittest.TestCase):
@@ -268,6 +283,17 @@ class ThinShellTests(unittest.TestCase):
             errors: list[str] = []
             VALIDATOR.validate_thin_shells(errors)
             self.assertTrue(any("must require injected SHARED_ROOT" in error for error in errors))
+        finally:
+            path.write_text(original, encoding="utf-8")
+
+    def test_rejects_opencode_specialist_bash_allow(self) -> None:
+        path = VALIDATOR.PLUGIN_ROOT / "opencode" / "agents" / "bug-hunter.md"
+        original = path.read_text(encoding="utf-8")
+        try:
+            path.write_text(original.replace("bash: deny", "bash: allow"), encoding="utf-8")
+            errors: list[str] = []
+            VALIDATOR.validate_thin_shells(errors)
+            self.assertTrue(any("bash: deny" in error for error in errors))
         finally:
             path.write_text(original, encoding="utf-8")
 

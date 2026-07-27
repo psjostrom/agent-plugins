@@ -428,13 +428,16 @@ def validate_reviewer_surface_parity(
     opencode_reviewers: set[str],
     errors: list[str],
     expected_reviewers: set[str] | None = None,
+    cursor_reviewers: set[str] | None = None,
 ) -> None:
-    expected = expected_reviewers or (codex_reviewers | claude_reviewers | opencode_reviewers)
-    surfaces = (
+    surfaces: list[tuple[str, set[str]]] = [
         ("Codex reviewer prompts", codex_reviewers),
         ("Claude reviewer agents", claude_reviewers),
         ("opencode reviewer agents", opencode_reviewers),
-    )
+    ]
+    if cursor_reviewers is not None:
+        surfaces.append(("Cursor reviewer roles", cursor_reviewers))
+    expected = expected_reviewers or set().union(*(reviewers for _, reviewers in surfaces))
     for label, reviewers in surfaces:
         missing = sorted(expected - reviewers)
         extra = sorted(reviewers - expected)
@@ -444,11 +447,19 @@ def validate_reviewer_surface_parity(
             errors.append(f"unexpected {label}: {', '.join(extra)}")
 
 
+def reviewer_names_from_adapter(path: Path) -> set[str]:
+    if not path.exists():
+        return set()
+    text = path.read_text(encoding="utf-8")
+    return {role for role in REVIEWER_NAMES if f"{role}.md`" in text}
+
+
 def validate_cross_platform_reviewer_parity(errors: list[str]) -> None:
     validate_reviewer_surface_parity(
         codex_reviewers=reviewer_names_in(SKILL_ROOT / "references" / "reviewers"),
         claude_reviewers=reviewer_names_in(PLUGIN_ROOT / "agents"),
         opencode_reviewers=reviewer_names_in(PLUGIN_ROOT / "opencode" / "agents", ignored={"reviewer"}),
+        cursor_reviewers=reviewer_names_from_adapter(SKILL_ROOT / "references" / "cursor.md"),
         errors=errors,
         expected_reviewers=set(REVIEWER_NAMES),
     )
@@ -627,6 +638,13 @@ def validate_thin_shells(errors: list[str]) -> None:
                 require(
                     frontmatter_external_directory_allow(frontmatter),
                     f"{path}: opencode shell must allow external_directory for SHARED_ROOT reads",
+                    errors,
+                )
+                data = _load_frontmatter_mapping(frontmatter)
+                permission = data.get("permission") if isinstance(data, dict) else None
+                require(
+                    isinstance(permission, dict) and permission.get("bash") == "deny",
+                    f"{path}: opencode specialist must set bash: deny",
                     errors,
                 )
             else:
