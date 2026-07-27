@@ -44,22 +44,29 @@ Claude Code session. To install from a local checkout, replace
 
 ### Cursor
 
-Import this repository as a marketplace, then install the plugins you want.
+This repository is a **marketplace of multiple plugins**, not a single plugin.
 Cursor reads [`.cursor-plugin/marketplace.json`](.cursor-plugin/marketplace.json).
+Add the marketplace once, then install each plugin you want from it.
 
-**Teams / Enterprise (preferred):** Dashboard → Plugins → Add Marketplace →
-Import from Repo → paste `https://github.com/psjostrom/agent-plugins`. Optionally
-enable Auto Refresh after connecting the Cursor GitHub App.
+**1. Add the marketplace**
 
-**Personal:** Customize → Plugins → paste
-`https://github.com/psjostrom/agent-plugins`, or run
-`/add-plugin https://github.com/psjostrom/agent-plugins` in chat. Personal
-GitHub marketplace imports can pin a stale commit; if Update/Reinstall does not
-move forward, re-import the marketplace or use local iteration below.
+- **Teams / Enterprise (preferred):** Dashboard → Plugins → Add Marketplace →
+  Import from Repo → paste `https://github.com/psjostrom/agent-plugins`.
+  Optionally enable Auto Refresh after connecting the Cursor GitHub App.
+- **Personal:** Customize → Plugins → paste
+  `https://github.com/psjostrom/agent-plugins` (or `/add-plugin` with that URL).
+  That registers the marketplace catalog; it does not install every plugin.
+  Personal GitHub marketplace imports can pin a stale commit; if
+  Update/Reinstall does not move forward, re-import the marketplace or use
+  local iteration below.
 
-Install `shipwright` from the imported marketplace (user or project scope).
-Shipwright requires Superpowers 6.1.1 or newer as a separate Cursor marketplace
-plugin. Invoke with `/shipwright`.
+**2. Install individual plugins**
+
+From the imported marketplace, install each plugin you want (user or project
+scope). Cursor plugins currently listed:
+
+- `shipwright` — invoke with `/shipwright`. Requires Superpowers 6.1.1 or newer
+  as a separate Cursor marketplace plugin.
 
 #### Local iteration (plugin development only)
 
