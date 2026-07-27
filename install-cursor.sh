@@ -7,9 +7,14 @@ CURSOR_PLUGINS="${CURSOR_PLUGINS_LOCAL:-${HOME}/.cursor/plugins/local}"
 usage() {
   cat <<EOF
 Usage:
-  ./install-cursor.sh install <plugin>    Symlink plugin into ~/.cursor/plugins/local/
-  ./install-cursor.sh uninstall <plugin>  Remove plugin symlink
+  ./install-cursor.sh install <plugin>    Copy plugin into ~/.cursor/plugins/local/
+  ./install-cursor.sh uninstall <plugin>  Remove a local plugin copy or symlink
   ./install-cursor.sh list                Show available plugins and install state
+
+For durable installs, import this repository as a Cursor marketplace instead.
+This script is for local plugin iteration only. Cursor rejects symlinks whose
+target is outside ~/.cursor/plugins/local, so this installer copies the plugin
+tree (re-run after source edits).
 
 Environment:
   CURSOR_PLUGINS_LOCAL   Override the local plugins directory
@@ -24,6 +29,20 @@ available_plugins() {
   done
 }
 
+assert_dest_under_plugins() {
+  dest="$1"
+  plugins_real=$(cd "$CURSOR_PLUGINS" && pwd)
+  dest_parent=$(cd "$(dirname "$dest")" && pwd)
+  case "$dest_parent" in
+    "$plugins_real")
+      ;;
+    *)
+      echo "Refusing path escape: $dest is not under $CURSOR_PLUGINS"
+      exit 1
+      ;;
+  esac
+}
+
 install_plugin() {
   plugin="$1"
   src="$SCRIPT_DIR/plugins/$plugin"
@@ -35,25 +54,31 @@ install_plugin() {
   fi
   mkdir -p "$CURSOR_PLUGINS"
   dest="$CURSOR_PLUGINS/$plugin"
-  if [ -L "$dest" ]; then
-    :
+  assert_dest_under_plugins "$dest"
+  if [ -L "$dest" ] || [ -d "$dest" ]; then
+    rm -rf "$dest"
   elif [ -e "$dest" ]; then
-    echo "Refusing to install $plugin: $dest exists and is not a symlink."
+    echo "Refusing to install $plugin: $dest exists and is not a plugin directory or symlink."
     echo "Remove or rename that path, then retry."
     exit 1
   fi
-  ln -sfn "$src" "$dest"
-  echo "Installed $plugin -> $dest"
+  # Cursor rejects local-plugin symlinks that resolve outside plugins/local.
+  cp -R "$src" "$dest"
+  echo "Installed $plugin -> $dest (copy; re-run after source edits)"
 }
 
 uninstall_plugin() {
   plugin="$1"
   dest="$CURSOR_PLUGINS/$plugin"
-  if [ ! -L "$dest" ]; then
-    echo "Plugin \"$plugin\" is not installed as a symlink at $dest"
+  assert_dest_under_plugins "$dest"
+  if [ -L "$dest" ]; then
+    rm "$dest"
+  elif [ -d "$dest" ] && [ -f "$dest/.cursor-plugin/plugin.json" ]; then
+    rm -rf "$dest"
+  else
+    echo "Plugin \"$plugin\" is not installed at $dest"
     exit 1
   fi
-  rm "$dest"
   echo "Uninstalled $plugin from $CURSOR_PLUGINS"
 }
 
@@ -63,7 +88,9 @@ list_plugins() {
   for plugin in $(available_plugins); do
     dest="$CURSOR_PLUGINS/$plugin"
     if [ -L "$dest" ]; then
-      echo "  [x] $plugin -> $(readlink "$dest")"
+      echo "  [x] $plugin -> $(readlink "$dest") (symlink; Cursor may reject if target is outside local/)"
+    elif [ -d "$dest" ] && [ -f "$dest/.cursor-plugin/plugin.json" ]; then
+      echo "  [x] $plugin (copy)"
     else
       echo "  [ ] $plugin"
     fi

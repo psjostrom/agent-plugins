@@ -44,15 +44,36 @@ Claude Code session. To install from a local checkout, replace
 
 ### Cursor
 
-Symlink Shipwright into Cursor's local plugin directory from this repository
-root:
+Import this repository as a marketplace, then install the plugins you want.
+Cursor reads [`.cursor-plugin/marketplace.json`](.cursor-plugin/marketplace.json).
+
+**Teams / Enterprise (preferred):** Dashboard → Plugins → Add Marketplace →
+Import from Repo → paste `https://github.com/psjostrom/agent-plugins`. Optionally
+enable Auto Refresh after connecting the Cursor GitHub App.
+
+**Personal:** Customize → Plugins → paste
+`https://github.com/psjostrom/agent-plugins`, or run
+`/add-plugin https://github.com/psjostrom/agent-plugins` in chat. Personal
+GitHub marketplace imports can pin a stale commit; if Update/Reinstall does not
+move forward, re-import the marketplace or use local iteration below.
+
+Install `shipwright` from the imported marketplace (user or project scope).
+Shipwright requires Superpowers 6.1.1 or newer as a separate Cursor marketplace
+plugin. Invoke with `/shipwright`.
+
+#### Local iteration (plugin development only)
+
+`~/.cursor/plugins/local` is for testing unpublished changes, not durable
+installs. Cursor rejects symlinks whose target is outside that directory, so
+this repo's installer copies the plugin tree:
 
 ```sh
 ./install-cursor.sh install shipwright
+./install-cursor.sh list
 ```
 
-Reload the Cursor window afterward. Shipwright requires Superpowers 6.1.1 or
-newer as a separate Cursor plugin. Uninstall with:
+Reload the Cursor window afterward (`Developer: Reload Window`). Re-run install
+after source edits. Uninstall with:
 
 ```sh
 ./install-cursor.sh uninstall shipwright
