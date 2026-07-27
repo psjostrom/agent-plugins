@@ -206,6 +206,55 @@ class ThinShellTests(unittest.TestCase):
         finally:
             path.write_text(original, encoding="utf-8")
 
+    def test_rejects_external_directory_inside_scalar_description(self) -> None:
+        path = VALIDATOR.PLUGIN_ROOT / "opencode" / "agents" / "bug-hunter.md"
+        original = path.read_text(encoding="utf-8")
+        frontmatter, body = VALIDATOR.split_frontmatter(original)
+        # Remove the real permission key; leave allow only inside a scalar value.
+        poisoned = frontmatter.replace("  external_directory: allow\n", "").replace(
+            "description: INTERNAL — invoked only by the /parallel-review orchestrator. Do not invoke directly; invoke /parallel-review instead. Reviews changed code for runtime bugs.\n",
+            "description: |\n  INTERNAL agent.\n  external_directory: allow\n",
+        )
+        try:
+            path.write_text(poisoned + body, encoding="utf-8")
+            errors: list[str] = []
+            VALIDATOR.validate_thin_shells(errors)
+            self.assertTrue(any("external_directory" in error and "bug-hunter" in error for error in errors))
+        finally:
+            path.write_text(original, encoding="utf-8")
+
+    def test_rejects_duplicate_external_directory_keys(self) -> None:
+        path = VALIDATOR.PLUGIN_ROOT / "opencode" / "agents" / "bug-hunter.md"
+        original = path.read_text(encoding="utf-8")
+        frontmatter, body = VALIDATOR.split_frontmatter(original)
+        duplicated = frontmatter.replace(
+            "  external_directory: allow\n",
+            "  external_directory: allow\n  external_directory: allow\n",
+        )
+        try:
+            path.write_text(duplicated + body, encoding="utf-8")
+            errors: list[str] = []
+            VALIDATOR.validate_thin_shells(errors)
+            self.assertTrue(any("external_directory" in error and "bug-hunter" in error for error in errors))
+        finally:
+            path.write_text(original, encoding="utf-8")
+
+    def test_rejects_disconnected_shared_root_phrases(self) -> None:
+        path = VALIDATOR.PLUGIN_ROOT / "opencode" / "agents" / "bug-hunter.md"
+        original = path.read_text(encoding="utf-8")
+        frontmatter, body = VALIDATOR.split_frontmatter(original)
+        weakened = body.replace(
+            "Require an absolute `SHARED_ROOT=...` line from the orchestrator Task prompt. Do not rediscover the path and do not read repository-relative skill files.",
+            "Mention $SHARED_ROOT somewhere.\n\nDo not rediscover unrelated state.\n\nRequire an absolute path for something else.",
+        )
+        try:
+            path.write_text(frontmatter + weakened, encoding="utf-8")
+            errors: list[str] = []
+            VALIDATOR.validate_thin_shells(errors)
+            self.assertTrue(any("must require injected SHARED_ROOT" in error for error in errors))
+        finally:
+            path.write_text(original, encoding="utf-8")
+
     def test_rejects_primary_external_directory_allow_only_in_body(self) -> None:
         path = VALIDATOR.PLUGIN_ROOT / "opencode" / "agents" / "reviewer.md"
         original = path.read_text(encoding="utf-8")

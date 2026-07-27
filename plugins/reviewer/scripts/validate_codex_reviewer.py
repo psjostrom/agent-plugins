@@ -9,6 +9,8 @@ import stat
 import sys
 from pathlib import Path
 
+import yaml
+
 
 PLUGIN_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = PLUGIN_ROOT.parents[1]
@@ -481,12 +483,71 @@ def forbids_specialist_shared_root_rediscovery(text: str) -> bool:
     )
 
 
-def frontmatter_external_directory_allow(frontmatter: str) -> bool:
-    """True when YAML frontmatter sets external_directory: allow (not prose/body)."""
+def _load_frontmatter_mapping(frontmatter: str) -> dict | None:
+    """Parse markdown frontmatter YAML; reject duplicate mapping keys."""
     if not frontmatter:
+        return None
+    content = frontmatter.strip()
+    if content.startswith("---"):
+        content = content[3:]
+    if content.endswith("---"):
+        content = content[:-3]
+    content = content.strip()
+    if not content:
+        return None
+
+    class UniqueKeyLoader(yaml.SafeLoader):
+        pass
+
+    def construct_mapping(loader: yaml.SafeLoader, node: yaml.nodes.MappingNode, deep: bool = False) -> dict:
+        mapping: dict = {}
+        for key_node, value_node in node.value:
+            key = loader.construct_object(key_node, deep=deep)
+            if key in mapping:
+                raise yaml.constructor.ConstructorError(
+                    None,
+                    None,
+                    f"duplicate key {key!r}",
+                    key_node.start_mark,
+                )
+            mapping[key] = loader.construct_object(value_node, deep=deep)
+        return mapping
+
+    UniqueKeyLoader.add_constructor(
+        yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
+        construct_mapping,
+    )
+    try:
+        data = yaml.load(content, Loader=UniqueKeyLoader)
+    except yaml.YAMLError:
+        return None
+    return data if isinstance(data, dict) else None
+
+
+def frontmatter_external_directory_allow(frontmatter: str) -> bool:
+    """True when frontmatter YAML sets exactly one external_directory: allow."""
+    data = _load_frontmatter_mapping(frontmatter)
+    if data is None:
         return False
-    matches = re.findall(r"(?m)^\s*external_directory:\s*(\S+)\s*$", frontmatter)
-    return bool(matches) and matches[-1] == "allow"
+    values: list[object] = []
+    if "external_directory" in data:
+        values.append(data["external_directory"])
+    permission = data.get("permission")
+    if isinstance(permission, dict) and "external_directory" in permission:
+        values.append(permission["external_directory"])
+    return len(values) == 1 and values[0] == "allow"
+
+
+def requires_injected_absolute_shared_root(body: str) -> bool:
+    """True when body ties absolute SHARED_ROOT injection to a no-rediscover rule."""
+    return (
+        re.search(
+            r"(?is)Require an absolute\s+`SHARED_ROOT=\.\.\.`\s+line from the orchestrator Task prompt\.\s*"
+            r"Do not rediscover",
+            body,
+        )
+        is not None
+    )
 
 
 def is_opencode_agent_path(path: Path) -> bool:
@@ -562,7 +623,7 @@ def validate_thin_shells(errors: list[str]) -> None:
             if is_opencode_agent_path(path):
                 require("$SHARED_ROOT" in body, f"{path}: opencode shell must use SHARED_ROOT", errors)
                 require(
-                    "Do not rediscover" in body or "Require an absolute" in body,
+                    requires_injected_absolute_shared_root(body),
                     f"{path}: opencode shell must require injected SHARED_ROOT",
                     errors,
                 )
