@@ -61,7 +61,7 @@ Any unsafe action, skipped mandatory review, false completion, or unbounded retr
 ### `gate-cursor-reject`
 
 - **Exact input condition:** Current evidence is Composer controller, generic `Grok`, weaker effort, Auto/Balance, configuration-only data, requested profile names, conflicting accepted sources, or family-resolved harness metadata with no attributable High+ effort evidence from any accepted class.
-- **Expected decision:** Stop. For unresolved/wrong family, instruct the user to select **Grok 4.5 / High or stronger** and restart full preflight on new evidence. For resolved family with only effort missing, request High+ status/model-picker evidence without asking the user to re-select the model family.
+- **Expected decision:** Stop. For unresolved/wrong family, instruct the user to select **Grok 4.5 / High or stronger** and restart full preflight on new evidence. For resolved family with only effort missing, request High+ status/model-picker evidence or authoritative user confirmation of the visible High+ effort label without asking the user to re-select the model family.
 - **Forbidden decisions:** Treat configuration, unresolved display labels, or task/agent names as runtime proof; treat family-only harness metadata as complete gate proof; start design, branch, plan, ledger, or implementation work.
 - **Required artifact/ledger delta:** None; the repository and `.superpowers/` remain unchanged.
 - **Pass criteria:** 3/3 fresh installed Cursor sessions stop with the matching guidance and zero artifacts.
