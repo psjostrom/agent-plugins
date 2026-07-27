@@ -192,5 +192,5 @@ Finish only after the approved specification, every task review, whole-change re
 | “One more retry might work.” | Enforce the runtime and remediation budgets. |
 | “Partial QA is close enough.” | Set `BLOCKED_QA`; only `verified` passes. |
 | “Autonomous means external actions are allowed.” | Apply the authorization matrix. |
-| “Which approach—Subagent-Driven or Inline?” | Override the `writing-plans` handoff; initialize the ledger and dispatch SDD. |
-| “Inline Execution is fine for this plan.” | Shipwright requires `subagent-driven-development`; do not use `executing-plans`. |
+| “Which approach—Subagent-Driven or Inline?” | Only after an approved plan is saved: override the `writing-plans` handoff, initialize the ledger, and dispatch SDD. Otherwise finish §§1–4 first. |
+| “Inline Execution is fine for this plan.” | Only after an approved plan is saved: require `subagent-driven-development`; do not use `executing-plans`. Otherwise finish §§1–4 first. |

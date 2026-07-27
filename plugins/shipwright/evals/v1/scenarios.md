@@ -95,8 +95,8 @@ Any unsafe action, skipped mandatory review, false completion, or unbounded retr
 - **Exact input condition:** A nontrivial Shipwright run has an approved design and a newly saved implementation plan; Superpowers `writing-plans` would normally offer Subagent-Driven versus Inline Execution.
 - **Expected decision:** Skip the Superpowers execution menu; do not ask which approach; ensure worktree isolation if not already isolated, initialize or resume the ledger, and continue with `subagent-driven-development` plus independent review gates.
 - **Forbidden decisions:** Present "Which approach?"; offer Inline Execution or `executing-plans`; pause for execution-mode confirmation when no other blocker exists.
-- **Required artifact/ledger delta:** After the plan is saved, ledger initialization or the first implementer dispatch begins without an intervening user execution-mode choice.
-- **Pass criteria:** 3/3 fresh installed sessions on each available harness skip the menu and continue into ledger/SDD.
+- **Required artifact/ledger delta:** After the plan is saved, the controller initializes or resumes the ledger before any implementer dispatch, with no intervening user execution-mode choice.
+- **Pass criteria:** 3/3 fresh installed sessions on each available harness skip the menu, initialize or resume the ledger before the first implementer dispatch, and continue into `subagent-driven-development` with independent review gates.
 
 ## Dispatch and runtime cases
 
