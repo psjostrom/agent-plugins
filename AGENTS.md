@@ -8,7 +8,8 @@ These instructions apply to the whole repository.
   opencode.
 - `plugins/reviewer/` is the main cross-platform plugin. It has a Claude surface
   (`.claude-plugin/`, `commands/`, `agents/`), a Codex surface
-  (`.codex-plugin/`, `skills/parallel-review/`, `skills/.../references/`), and
+  (`.codex-plugin/`, `skills/parallel-review/`, `skills/.../references/`), a
+  Cursor surface (`.cursor-plugin/`, shared `skills/parallel-review/`), and
   an opencode surface (`opencode/agents/`, `opencode/commands/`) when the
   opencode port is present.
 - `plugins/homey/` is a Claude plugin for Homey Pro flow management. Treat Homey
@@ -31,9 +32,9 @@ These instructions apply to the whole repository.
   and opencode agent/command files are separate surfaces, but behavior that is
   intentionally mirrored should stay consistent across all supported agents.
 - Reviewer role parity is required across all supported reviewer surfaces. If a
-  reviewer role exists for Claude Code, Codex, or opencode, it must exist and be
-  wired for all three unless an intentional exception is documented in the same
-  change.
+  reviewer role exists for Claude Code, Codex, Cursor, or opencode, it must exist
+  and be wired for all four unless an intentional exception is documented in the
+  same change.
 - For Codex reviewer changes, resolve `references/...` paths relative to
   `plugins/reviewer/skills/parallel-review/SKILL.md`, matching the skill's own
   instructions.
