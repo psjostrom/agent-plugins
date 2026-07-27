@@ -170,6 +170,61 @@ class ThinShellTests(unittest.TestCase):
         finally:
             path.write_text(original, encoding="utf-8")
 
+    def test_rejects_positive_rediscovery_wording(self) -> None:
+        path = VALIDATOR.SKILL_ROOT / "references" / "opencode.md"
+        original = path.read_text(encoding="utf-8")
+        try:
+            path.write_text(
+                original.replace(
+                    "Do **not** require specialists to rediscover `$SHARED_ROOT`",
+                    "Always require specialists to rediscover `$SHARED_ROOT`",
+                ),
+                encoding="utf-8",
+            )
+            errors: list[str] = []
+            VALIDATOR.validate_harness_adapters(errors)
+            self.assertTrue(any("forbid specialist SHARED_ROOT rediscovery" in error for error in errors))
+        finally:
+            path.write_text(original, encoding="utf-8")
+
+    def test_rejects_external_directory_allow_only_in_body(self) -> None:
+        path = VALIDATOR.PLUGIN_ROOT / "opencode" / "agents" / "bug-hunter.md"
+        original = path.read_text(encoding="utf-8")
+        frontmatter, body = VALIDATOR.split_frontmatter(original)
+        weakened_frontmatter = frontmatter.replace(
+            "external_directory: allow",
+            "external_directory: deny",
+        )
+        try:
+            path.write_text(
+                weakened_frontmatter + "Note external_directory: allow in prose.\n" + body,
+                encoding="utf-8",
+            )
+            errors: list[str] = []
+            VALIDATOR.validate_thin_shells(errors)
+            self.assertTrue(any("external_directory" in error and "bug-hunter" in error for error in errors))
+        finally:
+            path.write_text(original, encoding="utf-8")
+
+    def test_rejects_primary_external_directory_allow_only_in_body(self) -> None:
+        path = VALIDATOR.PLUGIN_ROOT / "opencode" / "agents" / "reviewer.md"
+        original = path.read_text(encoding="utf-8")
+        frontmatter, body = VALIDATOR.split_frontmatter(original)
+        weakened_frontmatter = frontmatter.replace(
+            "external_directory: allow",
+            "external_directory: deny",
+        )
+        try:
+            path.write_text(
+                weakened_frontmatter + "Set external_directory: allow somehow.\n" + body,
+                encoding="utf-8",
+            )
+            errors: list[str] = []
+            VALIDATOR.validate_thin_shells(errors)
+            self.assertTrue(any("primary agent must allow external_directory" in error for error in errors))
+        finally:
+            path.write_text(original, encoding="utf-8")
+
 
 class CursorPackagingTests(unittest.TestCase):
     def test_accepts_cursor_manifest_and_marketplace(self) -> None:

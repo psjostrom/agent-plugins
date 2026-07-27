@@ -386,7 +386,7 @@ def validate_harness_adapters(errors: list[str]) -> None:
             errors,
         )
         require(
-            "require specialists to rediscover" in text,
+            forbids_specialist_shared_root_rediscovery(text),
             f"{opencode_path}: must forbid specialist SHARED_ROOT rediscovery",
             errors,
         )
@@ -470,6 +470,25 @@ def injects_shared_root_into_task_prompt(text: str) -> bool:
     return any(marker in text for marker in markers)
 
 
+def forbids_specialist_shared_root_rediscovery(text: str) -> bool:
+    """True only for explicit negative wording (not polarity-ambiguous substrings)."""
+    return (
+        re.search(
+            r"(?i)do\s+(?:\*\*)?not(?:\*\*)?\s+require\s+specialists\s+to\s+rediscover",
+            text,
+        )
+        is not None
+    )
+
+
+def frontmatter_external_directory_allow(frontmatter: str) -> bool:
+    """True when YAML frontmatter sets external_directory: allow (not prose/body)."""
+    if not frontmatter:
+        return False
+    matches = re.findall(r"(?m)^\s*external_directory:\s*(\S+)\s*$", frontmatter)
+    return bool(matches) and matches[-1] == "allow"
+
+
 def is_opencode_agent_path(path: Path) -> bool:
     try:
         path.resolve().relative_to((PLUGIN_ROOT / "opencode" / "agents").resolve())
@@ -533,7 +552,7 @@ def validate_thin_shells(errors: list[str]) -> None:
             if path.stem == "reviewer":
                 continue
             text = path.read_text(encoding="utf-8")
-            _, body = split_frontmatter(text)
+            frontmatter, body = split_frontmatter(text)
             role = path.stem
             require(
                 specialist_reads_shared_prompt(body, role),
@@ -548,7 +567,7 @@ def validate_thin_shells(errors: list[str]) -> None:
                     errors,
                 )
                 require(
-                    "external_directory: allow" in text,
+                    frontmatter_external_directory_allow(frontmatter),
                     f"{path}: opencode shell must allow external_directory for SHARED_ROOT reads",
                     errors,
                 )
@@ -565,8 +584,9 @@ def validate_thin_shells(errors: list[str]) -> None:
     primary = PLUGIN_ROOT / "opencode" / "agents" / "reviewer.md"
     if primary.exists():
         text = primary.read_text(encoding="utf-8")
+        frontmatter, _ = split_frontmatter(text)
         require(
-            "external_directory: allow" in text,
+            frontmatter_external_directory_allow(frontmatter),
             f"{primary}: primary agent must allow external_directory for SHARED_ROOT reads",
             errors,
         )
