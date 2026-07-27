@@ -63,10 +63,9 @@ Add the marketplace once, then install each plugin you want from it.
 **2. Install individual plugins**
 
 From the imported marketplace, install each plugin you want (user or project
-scope). Cursor plugins currently listed:
-
-- `shipwright` — invoke with `/shipwright`. Requires Superpowers 6.1.1 or newer
-  as a separate Cursor marketplace plugin.
+scope). Currently listed: shipwright (`/shipwright`; requires Superpowers
+6.1.1+ as a separate Cursor marketplace plugin) and reviewer
+(`/parallel-review`, or “use parallel-review”).
 
 #### Local iteration (plugin development only)
 
@@ -75,6 +74,7 @@ installs. Cursor rejects symlinks whose target is outside that directory, so
 this repo's installer copies the plugin tree:
 
 ```sh
+./install-cursor.sh install reviewer
 ./install-cursor.sh install shipwright
 ./install-cursor.sh list
 ```
@@ -83,6 +83,7 @@ Reload the Cursor window afterward (`Developer: Reload Window`). Re-run install
 after source edits. Uninstall with:
 
 ```sh
+./install-cursor.sh uninstall reviewer
 ./install-cursor.sh uninstall shipwright
 ```
 
