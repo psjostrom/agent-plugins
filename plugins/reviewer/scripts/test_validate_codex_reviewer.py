@@ -239,6 +239,22 @@ class ThinShellTests(unittest.TestCase):
         finally:
             path.write_text(original, encoding="utf-8")
 
+    def test_rejects_top_level_external_directory_without_permission(self) -> None:
+        path = VALIDATOR.PLUGIN_ROOT / "opencode" / "agents" / "bug-hunter.md"
+        original = path.read_text(encoding="utf-8")
+        frontmatter, body = VALIDATOR.split_frontmatter(original)
+        weakened = frontmatter.replace("  external_directory: allow\n", "").replace(
+            "permission:\n",
+            "external_directory: allow\npermission:\n",
+        )
+        try:
+            path.write_text(weakened + body, encoding="utf-8")
+            errors: list[str] = []
+            VALIDATOR.validate_thin_shells(errors)
+            self.assertTrue(any("external_directory" in error and "bug-hunter" in error for error in errors))
+        finally:
+            path.write_text(original, encoding="utf-8")
+
     def test_rejects_disconnected_shared_root_phrases(self) -> None:
         path = VALIDATOR.PLUGIN_ROOT / "opencode" / "agents" / "bug-hunter.md"
         original = path.read_text(encoding="utf-8")

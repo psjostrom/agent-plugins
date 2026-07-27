@@ -525,17 +525,14 @@ def _load_frontmatter_mapping(frontmatter: str) -> dict | None:
 
 
 def frontmatter_external_directory_allow(frontmatter: str) -> bool:
-    """True when frontmatter YAML sets exactly one external_directory: allow."""
+    """True when permission.external_directory is exactly allow."""
     data = _load_frontmatter_mapping(frontmatter)
     if data is None:
         return False
-    values: list[object] = []
-    if "external_directory" in data:
-        values.append(data["external_directory"])
     permission = data.get("permission")
-    if isinstance(permission, dict) and "external_directory" in permission:
-        values.append(permission["external_directory"])
-    return len(values) == 1 and values[0] == "allow"
+    if not isinstance(permission, dict):
+        return False
+    return permission.get("external_directory") == "allow"
 
 
 def requires_injected_absolute_shared_root(body: str) -> bool:
