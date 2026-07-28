@@ -24,8 +24,42 @@ available_plugins() {
   done
 }
 
+is_available_plugin() {
+  plugin="$1"
+  case "$plugin" in
+    ''|*/*|*\\*|.*|*\.\.*)
+      return 1
+      ;;
+  esac
+  for candidate in $(available_plugins); do
+    if [ "$candidate" = "$plugin" ]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+assert_dest_under_plugins() {
+  dest="$1"
+  plugins_real=$(cd "$CURSOR_PLUGINS" && pwd)
+  dest_parent=$(cd "$(dirname "$dest")" && pwd)
+  case "$dest_parent" in
+    "$plugins_real")
+      ;;
+    *)
+      echo "Refusing path escape: $dest is not under $CURSOR_PLUGINS"
+      exit 1
+      ;;
+  esac
+}
+
 install_plugin() {
   plugin="$1"
+  if ! is_available_plugin "$plugin"; then
+    echo "Plugin \"$plugin\" is not an available Cursor plugin name."
+    echo "Available: $(available_plugins | tr '\n' ' ')"
+    exit 1
+  fi
   src="$SCRIPT_DIR/plugins/$plugin"
   manifest="$src/.cursor-plugin/plugin.json"
   if [ ! -f "$manifest" ]; then
@@ -35,6 +69,7 @@ install_plugin() {
   fi
   mkdir -p "$CURSOR_PLUGINS"
   dest="$CURSOR_PLUGINS/$plugin"
+  assert_dest_under_plugins "$dest"
   if [ -L "$dest" ]; then
     :
   elif [ -e "$dest" ]; then
@@ -48,7 +83,13 @@ install_plugin() {
 
 uninstall_plugin() {
   plugin="$1"
+  if ! is_available_plugin "$plugin"; then
+    echo "Plugin \"$plugin\" is not an available Cursor plugin name."
+    echo "Available: $(available_plugins | tr '\n' ' ')"
+    exit 1
+  fi
   dest="$CURSOR_PLUGINS/$plugin"
+  assert_dest_under_plugins "$dest"
   if [ ! -L "$dest" ]; then
     echo "Plugin \"$plugin\" is not installed as a symlink at $dest"
     exit 1
