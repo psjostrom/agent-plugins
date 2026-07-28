@@ -16,10 +16,12 @@ These instructions apply to the whole repository.
   commands as potentially state-changing against a real local Homey instance.
 - `.agents/plugins/marketplace.json` is the local Codex marketplace entry.
   `.claude-plugin/marketplace.json` is the Claude marketplace entry.
-  `.cursor-plugin/marketplace.json` is the Cursor marketplace entry.
-- `install-cursor.sh` symlinks each `plugins/<name>/` directory that contains
+  `.cursor-plugin/marketplace.json` is the Cursor marketplace entry. Prefer
+  importing that marketplace from GitHub for durable Cursor installs.
+- `install-cursor.sh` copies each `plugins/<name>/` directory that contains
   `.cursor-plugin/plugin.json` into `~/.cursor/plugins/local/<name>` for local
-  Cursor plugin discovery. It refuses to replace a non-symlink path.
+  Cursor iteration only. Cursor rejects external symlinks under
+  `plugins/local`, so the installer uses copies rather than `ln -s`.
 - `install-opencode.sh` symlinks files from `plugins/*/opencode/` into
   opencode discovery directories. opencode has no plugin manifest in this repo;
   it discovers agents and commands by directory convention.
