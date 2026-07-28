@@ -143,9 +143,12 @@ If the plugin was installed with a non-default scope, pass `--scope user`,
 
 ### Cursor
 
-**Marketplace installs (durable):** Cursor does **not** ship a CLI uninstall for
-marketplace plugins. Remove each plugin from **Customize → Plugins** (or the
-Plugins UI): uninstall `reviewer`, `shipwright`, and/or `handoff` there.
+**Marketplace installs (durable):**
+
+- **UI:** Customize → Plugins — uninstall `reviewer`, `shipwright`, and/or `handoff`.
+- **Interactive CLI:** in Cursor Agent/CLI, use `/plugin` to uninstall at user or project scope.
+- **No scriptable shell uninstall** for marketplace plugins yet (nothing like `agent plugin uninstall …`). `agent plugin marketplace remove` only drops a marketplace registration, not an individual plugin.
+
 `homey` is not a Cursor plugin.
 
 **Local iteration copies only** (`~/.cursor/plugins/local`):
