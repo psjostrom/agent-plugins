@@ -114,6 +114,26 @@ class HandoffValidatorTests(unittest.TestCase):
         )
         self.assert_error("allow_implicit_invocation must be false")
 
+    def test_rejects_implicit_invocation_false_only_in_comment(self) -> None:
+        path = self.path("plugins/handoff/skills/handoff/agents/openai.yaml")
+        path.write_text(
+            path.read_text(encoding="utf-8").replace(
+                "  allow_implicit_invocation: false\n",
+                "  # allow_implicit_invocation: false\n",
+            ),
+            encoding="utf-8",
+        )
+        self.assert_error("allow_implicit_invocation must be false")
+
+    def test_rejects_missing_platform_reference_section(self) -> None:
+        path = self.path("plugins/handoff/skills/handoff/SKILL.md")
+        text = path.read_text(encoding="utf-8")
+        path.write_text(
+            text.replace("## 2. Select the platform reference\n", ""),
+            encoding="utf-8",
+        )
+        self.assert_error("missing required platform reference selection section")
+
     def test_main_uses_repository_root_from_script_location(self) -> None:
         with mock.patch.object(validator, "validate_bundle", return_value=[]) as validate:
             self.assertEqual(0, validator.main())

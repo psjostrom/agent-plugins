@@ -77,6 +77,9 @@ REQUIRED_FILES = (
 FORBIDDEN_DISABLE_TRUE = re.compile(
     r"(?m)^disable-model-invocation:\s*true\s*$"
 )
+ALLOW_IMPLICIT_INVOCATION_FALSE = re.compile(
+    r"(?m)^\s*allow_implicit_invocation:\s*false\s*$"
+)
 
 DOSSIER_MARKERS = (
     "Receiver startup",
@@ -346,10 +349,12 @@ def _validate_skill_text(skill: Optional[str], errors: list[str]) -> None:
             f"{_display(SKILL)}: missing required marker "
             "'never auto-run without user confirmation'"
         )
-    elif (
-        platform_reference_index >= 0
-        and confirmation_index > platform_reference_index
-    ):
+    if platform_reference_index < 0:
+        errors.append(
+            f"{_display(SKILL)}: missing required platform reference selection "
+            f"section ({PLATFORM_REFERENCE_SECTION!r})"
+        )
+    elif confirmation_index >= 0 and confirmation_index > platform_reference_index:
         errors.append(
             f"{_display(SKILL)}: auto-run confirmation gate must precede "
             "platform reference selection"
@@ -393,7 +398,7 @@ def _validate_openai_metadata(text: Optional[str], errors: list[str]) -> None:
     for marker in required:
         if marker not in text:
             errors.append(f"{_display(OPENAI_METADATA)}: missing {marker!r}")
-    if "allow_implicit_invocation: false" not in text:
+    if not ALLOW_IMPLICIT_INVOCATION_FALSE.search(text):
         errors.append(
             f"{_display(OPENAI_METADATA)}: allow_implicit_invocation must be false"
         )
