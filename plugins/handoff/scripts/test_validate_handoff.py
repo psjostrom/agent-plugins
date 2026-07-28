@@ -158,6 +158,40 @@ class HandoffValidatorTests(unittest.TestCase):
         )
         self.assert_error("skill frontmatter description must match SKILL_DESCRIPTION")
 
+    def test_codex_adapter_delegates_to_skill(self) -> None:
+        errors = validate_bundle(self.repo_root)
+        self.assertEqual([], errors)
+        path = self.path("plugins/handoff/skills/handoff/references/codex.md")
+        self.assertIn("SKILL.md", path.read_text(encoding="utf-8"))
+        self.assertIn("follow it", path.read_text(encoding="utf-8").lower())
+
+    def test_rejects_codex_adapter_without_skill_delegation(self) -> None:
+        path = self.path("plugins/handoff/skills/handoff/references/codex.md")
+        path.write_text(
+            "# Codex invocation\n\n## Invocation\n\n- Skill: `$handoff:handoff`\n",
+            encoding="utf-8",
+        )
+        self.assert_error("must explicitly delegate to SKILL.md")
+
+    def test_rejects_cursor_adapter_hosting_workflow_prose(self) -> None:
+        path = self.path("plugins/handoff/skills/handoff/references/cursor.md")
+        path.write_text(
+            path.read_text(encoding="utf-8") + "\nPrefer **standard** when\n",
+            encoding="utf-8",
+        )
+        self.assert_error("adapter must not host shared workflow prose")
+
+    def test_rejects_marketplace_wrong_description_when_present(self) -> None:
+        data = json.loads(
+            self.path(".cursor-plugin/marketplace.json").read_text(encoding="utf-8")
+        )
+        for entry in data["plugins"]:
+            if isinstance(entry, dict) and entry.get("name") == "handoff":
+                entry["description"] = "wrong"
+                break
+        self.write_json(".cursor-plugin/marketplace.json", data)
+        self.assert_error("marketplace handoff description")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -37,4 +37,4 @@ Ask exactly (substitute the tier):
 
 > I recommend a \<tier\> agent for this one — do you agree?
 
-Proceed only after yes, or after the user names `standard` / `frontier`. If they reject without choosing a tier, stop and do not write a dossier.
+Proceed only after yes, or after the user names `standard` / `frontier` / `mid` (`mid` → write `standard`). If they reject without choosing a recognized tier, stop and do not write a dossier.

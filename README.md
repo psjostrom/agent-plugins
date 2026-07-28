@@ -89,6 +89,7 @@ after source edits. Uninstall with:
 ```sh
 ./install-cursor.sh uninstall reviewer
 ./install-cursor.sh uninstall shipwright
+./install-cursor.sh uninstall handoff
 ```
 
 ### opencode

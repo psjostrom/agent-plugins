@@ -8,9 +8,14 @@ Write exactly one new file:
 
 - Resolve `<repo-root>` with `git rev-parse --show-toplevel`; never write `.handoff/` relative to an arbitrary current working directory.
 - Report the resulting path as repo-relative `.handoff/<slug>-YYYYMMDD-HHMM.md`.
-- `<slug>`: kebab-case from the mission (2–6 words). Fallback: `handoff`.
+- **Slug normalization** (from the mission; fallback `handoff` if invalid):
+  - Lowercase; split on whitespace and separators (`_`, `/`, `\`, `.`, and punctuation other than `-`).
+  - Keep only `[a-z0-9-]` characters; collapse repeated `-`; trim leading/trailing `-`.
+  - Require **2–6** non-empty kebab words (segments separated by single `-`).
+  - Reject empty results, absolute paths, `..`, or any other traversal/unsafe form → use `handoff`.
 - Timestamp: local time at write (`YYYYMMDD-HHMM`).
-- If the path exists, append `-2`, `-3`, … before `.md`.
+- Join as `"$repo_root/.handoff/<slug>-YYYYMMDD-HHMM.md"`, then **resolve** the candidate path and verify it remains strictly beneath `"$repo_root/.handoff"` before writing. If not, stop and use slug `handoff` (re-check containment).
+- If the path exists, append `-2`, `-3`, … before `.md` (still under `.handoff/`, re-check containment after each suffix).
 
 ## Shared spine (every tier)
 

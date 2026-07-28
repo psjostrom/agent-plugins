@@ -58,6 +58,7 @@ Before writing any `.handoff/` path:
 2. `exclude_file="$(git rev-parse --git-path info/exclude)"`
 3. Ensure a `.handoff/` line exists in that file (append if missing). Never edit a global gitignore.
 4. `git check-ignore -q .handoff/` (or a concrete future path under it). If exclusion fails, stop and ask before using an alternate location.
+5. `mkdir -p -- "$dossier_dir"` before selecting the output filename or writing the dossier.
 
 Then write `$dossier_dir/<slug>-YYYYMMDD-HHMM.md` per [references/dossier.md](references/dossier.md) with the chosen tier’s emphasis.
 

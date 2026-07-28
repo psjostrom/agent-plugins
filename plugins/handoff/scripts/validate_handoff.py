@@ -52,27 +52,6 @@ _CURSOR_BARE_INVOCATION_RE = re.compile(
     r"(?:`/handoff`|(?<![/\w])/handoff(?![/\w:]))"
 )
 
-REQUIRED_FILES = (
-    CODEX_MANIFEST,
-    CLAUDE_MANIFEST,
-    CURSOR_MANIFEST,
-    CLAUDE_COMMAND,
-    OPENCODE_COMMAND,
-    SKILL,
-    OPENAI_METADATA,
-    DOSSIER_REF,
-    TIER_REF,
-    CODEX_REFERENCE,
-    CLAUDE_REFERENCE,
-    CURSOR_REFERENCE,
-    OPENCODE_REFERENCE,
-    CODEX_MARKETPLACE,
-    CLAUDE_MARKETPLACE,
-    CURSOR_MARKETPLACE,
-    AGENTS_MD,
-    README,
-)
-
 # Presence of this key set to true is forbidden; absence is OK.
 FORBIDDEN_DISABLE_TRUE = re.compile(
     r"(?m)^disable-model-invocation:\s*true\s*$"
@@ -207,12 +186,58 @@ def _marketplace_has_plugin(data: Any, source: Path, errors: list[str]) -> None:
     if not isinstance(plugins, list):
         errors.append(f"{_display(source)}: marketplace plugins must be a list")
         return
-    names: list[str] = []
+    handoff_entry: Any = None
     for entry in plugins:
-        if isinstance(entry, dict) and isinstance(entry.get("name"), str):
-            names.append(entry["name"])
-    if "handoff" not in names:
+        if isinstance(entry, dict) and entry.get("name") == "handoff":
+            handoff_entry = entry
+            break
+    if handoff_entry is None:
         errors.append(f"{_display(source)}: missing handoff plugin entry")
+        return
+    if "description" in handoff_entry:
+        _require_equal(
+            handoff_entry,
+            ("description",),
+            DESCRIPTION,
+            "marketplace handoff description",
+            source,
+            errors,
+        )
+    if "keywords" in handoff_entry:
+        _require_equal(
+            handoff_entry,
+            ("keywords",),
+            KEYWORDS,
+            "marketplace handoff keywords",
+            source,
+            errors,
+        )
+
+
+def _validate_skill_adapter_reference(
+    text: Optional[str], path: Path, errors: list[str]
+) -> None:
+    """Codex/Cursor adapters must delegate to SKILL.md and stay thin."""
+
+    if text is None:
+        return
+    if "SKILL.md" not in text:
+        errors.append(f"{_display(path)}: must explicitly delegate to SKILL.md")
+    lowered = text.lower()
+    if not (
+        "follow it" in lowered
+        or "owns the workflow" in lowered
+        or ("read shared" in lowered and "skill.md" in lowered)
+    ):
+        errors.append(
+            f"{_display(path)}: must explicitly delegate workflow to SKILL.md"
+        )
+    for marker in THIN_SHELL_FORBIDDEN:
+        if marker in text:
+            errors.append(
+                f"{_display(path)}: adapter must not host shared workflow prose "
+                f"{marker!r}"
+            )
 
 
 def _validate_manifests(
@@ -421,9 +446,6 @@ def _validate_docs(agents: Optional[str], readme: Optional[str], errors: list[st
 
 def validate_bundle(repo_root: Path) -> list[str]:
     errors: list[str] = []
-    for relative in REQUIRED_FILES:
-        if not (repo_root / relative).is_file():
-            errors.append(f"missing required file: {_display(relative)}")
 
     codex = _load_json(repo_root, CODEX_MANIFEST, errors)
     claude = _load_json(repo_root, CLAUDE_MANIFEST, errors)
@@ -446,6 +468,8 @@ def validate_bundle(repo_root: Path) -> list[str]:
         text = _read_text(repo_root, ref, errors)
         if text is not None and "invocation" not in text.lower():
             errors.append(f"{_display(ref)}: must document invocation")
+        if ref in (CODEX_REFERENCE, CURSOR_REFERENCE):
+            _validate_skill_adapter_reference(text, ref, errors)
 
     _validate_thin_shell(_read_text(repo_root, CLAUDE_COMMAND, errors), CLAUDE_COMMAND, errors)
     opencode_cmd = _read_text(repo_root, OPENCODE_COMMAND, errors)
