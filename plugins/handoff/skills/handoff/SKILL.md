@@ -9,7 +9,11 @@ Create a self-contained handoff dossier so a fresh agent can continue a task wit
 
 Invoke as `$handoff:handoff` in Codex, `/handoff:handoff` in Claude Code, or `/handoff` in Cursor (opencode: `/handoff`). Optional tier args: `standard` or `frontier`.
 
-## 1. Select the platform reference
+## 1. Offer vs execute
+
+You may **offer** a handoff when context is polluted or a cost step-down / step-up fits. Never auto-run without user confirmation. Only execute this workflow when the user invoked handoff or explicitly accepted an offer.
+
+## 2. Select the platform reference
 
 Identify the active harness, then read exactly one complete reference:
 
@@ -24,10 +28,6 @@ Also read:
 
 - [references/tier-selection.md](references/tier-selection.md)
 - [references/dossier.md](references/dossier.md)
-
-## 2. Offer vs execute
-
-You may **offer** a handoff when context is polluted or a cost step-down / step-up fits. Never auto-run without user confirmation. Only execute this workflow when the user invoked handoff or explicitly accepted an offer.
 
 ## 3. Gather facts
 
@@ -54,11 +54,12 @@ Follow [references/tier-selection.md](references/tier-selection.md).
 
 Before writing any `.handoff/` path:
 
-1. `exclude_file="$(git rev-parse --git-path info/exclude)"`
-2. Ensure a `.handoff/` line exists in that file (append if missing). Never edit a global gitignore.
-3. `git check-ignore -q .handoff/` (or a concrete future path under it). If exclusion fails, stop and ask before using an alternate location.
+1. `repo_root="$(git rev-parse --show-toplevel)"`; use `dossier_dir="$repo_root/.handoff"` for every dossier write. Never write `.handoff/` relative to an arbitrary current working directory.
+2. `exclude_file="$(git rev-parse --git-path info/exclude)"`
+3. Ensure a `.handoff/` line exists in that file (append if missing). Never edit a global gitignore.
+4. `git check-ignore -q .handoff/` (or a concrete future path under it). If exclusion fails, stop and ask before using an alternate location.
 
-Then write `.handoff/<slug>-YYYYMMDD-HHMM.md` per [references/dossier.md](references/dossier.md) with the chosen tier’s emphasis.
+Then write `$dossier_dir/<slug>-YYYYMMDD-HHMM.md` per [references/dossier.md](references/dossier.md) with the chosen tier’s emphasis.
 
 ## 6. Close out
 

@@ -46,6 +46,8 @@ CURSOR_INVOCATION = "/handoff"
 DEFAULT_PROMPT = (
     "Use $handoff:handoff to write a handoff dossier for the next agent."
 )
+AUTO_RUN_CONFIRMATION_MARKER = "never auto-run without user confirmation"
+PLATFORM_REFERENCE_SECTION = "select the platform reference"
 _CURSOR_BARE_INVOCATION_RE = re.compile(
     r"(?:`/handoff`|(?<![/\w])/handoff(?![/\w:]))"
 )
@@ -336,10 +338,21 @@ def _validate_skill_text(skill: Optional[str], errors: list[str]) -> None:
     ):
         if marker not in skill:
             errors.append(f"{_display(SKILL)}: missing required marker {marker!r}")
-    if "never auto-run without user confirmation" not in skill.lower():
+    normalized_skill = skill.lower()
+    confirmation_index = normalized_skill.find(AUTO_RUN_CONFIRMATION_MARKER)
+    platform_reference_index = normalized_skill.find(PLATFORM_REFERENCE_SECTION)
+    if confirmation_index < 0:
         errors.append(
             f"{_display(SKILL)}: missing required marker "
             "'never auto-run without user confirmation'"
+        )
+    elif (
+        platform_reference_index >= 0
+        and confirmation_index > platform_reference_index
+    ):
+        errors.append(
+            f"{_display(SKILL)}: auto-run confirmation gate must precede "
+            "platform reference selection"
         )
     if not _has_cursor_invocation(skill):
         errors.append(f"{_display(SKILL)}: missing bare Cursor invocation /handoff")
@@ -380,9 +393,9 @@ def _validate_openai_metadata(text: Optional[str], errors: list[str]) -> None:
     for marker in required:
         if marker not in text:
             errors.append(f"{_display(OPENAI_METADATA)}: missing {marker!r}")
-    if "allow_implicit_invocation: true" in text:
+    if "allow_implicit_invocation: false" not in text:
         errors.append(
-            f"{_display(OPENAI_METADATA)}: allow_implicit_invocation must not be true"
+            f"{_display(OPENAI_METADATA)}: allow_implicit_invocation must be false"
         )
 
 
@@ -430,10 +443,8 @@ def validate_bundle(repo_root: Path) -> list[str]:
             errors.append(f"{_display(ref)}: must document invocation")
 
     _validate_thin_shell(_read_text(repo_root, CLAUDE_COMMAND, errors), CLAUDE_COMMAND, errors)
-    _validate_thin_shell(
-        _read_text(repo_root, OPENCODE_COMMAND, errors), OPENCODE_COMMAND, errors
-    )
     opencode_cmd = _read_text(repo_root, OPENCODE_COMMAND, errors)
+    _validate_thin_shell(opencode_cmd, OPENCODE_COMMAND, errors)
     if opencode_cmd is not None and "SHARED_ROOT" not in opencode_cmd:
         errors.append(f"{_display(OPENCODE_COMMAND)}: must resolve SHARED_ROOT")
 
@@ -447,8 +458,7 @@ def validate_bundle(repo_root: Path) -> list[str]:
 
 
 def main() -> int:
-    repo_root = Path.cwd()
-    errors = validate_bundle(repo_root)
+    errors = validate_bundle(Path(__file__).resolve().parents[3])
     if errors:
         for error in errors:
             print(error, file=sys.stderr)

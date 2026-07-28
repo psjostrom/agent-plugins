@@ -4,8 +4,10 @@
 
 Write exactly one new file:
 
-`.handoff/<slug>-YYYYMMDD-HHMM.md`
+`<repo-root>/.handoff/<slug>-YYYYMMDD-HHMM.md`
 
+- Resolve `<repo-root>` with `git rev-parse --show-toplevel`; never write `.handoff/` relative to an arbitrary current working directory.
+- Report the resulting path as repo-relative `.handoff/<slug>-YYYYMMDD-HHMM.md`.
 - `<slug>`: kebab-case from the mission (2–6 words). Fallback: `handoff`.
 - Timestamp: local time at write (`YYYYMMDD-HHMM`).
 - If the path exists, append `-2`, `-3`, … before `.md`.

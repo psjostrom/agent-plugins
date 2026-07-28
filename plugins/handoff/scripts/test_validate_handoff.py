@@ -9,6 +9,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPOSITORY_ROOT = SCRIPT_DIR.parents[2]
@@ -90,6 +91,33 @@ class HandoffValidatorTests(unittest.TestCase):
             encoding="utf-8",
         )
         self.assert_error("must not set disable-model-invocation: true")
+
+    def test_rejects_offer_gate_after_platform_selection(self) -> None:
+        path = self.path("plugins/handoff/skills/handoff/SKILL.md")
+        text = path.read_text(encoding="utf-8")
+        offer_start = text.index("## 1. Offer vs execute")
+        platform_start = text.index("## 2. Select the platform reference")
+        offer_section = text[offer_start:platform_start]
+        path.write_text(
+            text[:offer_start] + text[platform_start:] + "\n" + offer_section,
+            encoding="utf-8",
+        )
+        self.assert_error("must precede platform reference selection")
+
+    def test_requires_explicitly_disabled_implicit_invocation(self) -> None:
+        path = self.path("plugins/handoff/skills/handoff/agents/openai.yaml")
+        path.write_text(
+            path.read_text(encoding="utf-8").replace(
+                "  allow_implicit_invocation: false\n", ""
+            ),
+            encoding="utf-8",
+        )
+        self.assert_error("allow_implicit_invocation must be false")
+
+    def test_main_uses_repository_root_from_script_location(self) -> None:
+        with mock.patch.object(validator, "validate_bundle", return_value=[]) as validate:
+            self.assertEqual(0, validator.main())
+        self.assertEqual((REPOSITORY_ROOT,), validate.call_args.args)
 
     def test_rejects_fat_claude_shell(self) -> None:
         path = self.path("plugins/handoff/commands/handoff.md")

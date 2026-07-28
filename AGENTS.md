@@ -36,6 +36,8 @@ These instructions apply to the whole repository.
 - Preserve platform boundaries: Claude command/agent files, Codex skill files,
   and opencode agent/command files are separate surfaces, but behavior that is
   intentionally mirrored should stay consistent across all supported agents.
+- For handoff, change behavior only in `skills/handoff/`; Claude and opencode
+  command shells must stay thin.
 - Reviewer role parity is required across all supported reviewer surfaces. If a
   reviewer role exists for Claude Code, Codex, Cursor, or opencode, it must exist
   and be wired for all four unless an intentional exception is documented in the
