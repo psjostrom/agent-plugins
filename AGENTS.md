@@ -56,6 +56,20 @@ These instructions apply to the whole repository.
 - Use relative repository paths in plugin manifests and marketplace entries.
   Do not hard-code local absolute paths, credentials, or machine-specific data.
 
+## Commit Messages
+
+- Use Conventional Commits format: `<type>(<scope>): <description> (#PR)`
+- Types: `feat`, `fix`, `docs`, `chore`, `refactor`, `ci`, `test`
+- Scope: `reviewer`, `shipwright`, `homey`, `ci`, or omit for cross-cutting
+- Subject line ≤50 chars, imperative mood, no period
+- Reference PR number in parentheses at end
+- Examples:
+  - `feat(reviewer): add Cursor port and reviewer parity (#10)`
+  - `fix(shipwright): correct Cursor effort gate false-negative (#12)`
+  - `docs: document Cursor marketplace install as primary path (#11)`
+- GitHub repo is configured for squash-and-merge only; each PR becomes one commit
+- Never push merge commits to main; the merge commit message comes from PR title
+
 ## Validation
 
 - Run the reviewer bundle validator after changing reviewer platform files:
