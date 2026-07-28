@@ -7,6 +7,15 @@ Personal plugins for Claude Code, Codex, Cursor, and opencode.
 - `shipwright` — strict end-to-end development via `$shipwright:shipwright` in Codex, `/shipwright:shipwright` in Claude Code, or `/shipwright` in Cursor.
 - `handoff` — write `.handoff/` dossiers for standard/frontier continuation via `$handoff:handoff` / `/handoff:handoff` / `/handoff`.
 
+## Harness coverage
+
+| Plugin | Claude Code | Codex | Cursor | opencode |
+| --- | --- | --- | --- | --- |
+| `reviewer` | yes | yes | yes | yes |
+| `shipwright` | yes | yes | yes | no port |
+| `handoff` | yes | yes | yes | yes |
+| `homey` | yes | no | no | no |
+
 ## Install
 
 ### Codex
@@ -84,13 +93,7 @@ this repo's installer copies the plugin tree:
 ```
 
 Reload the Cursor window afterward (`Developer: Reload Window`). Re-run install
-after source edits. Uninstall with:
-
-```sh
-./install-cursor.sh uninstall reviewer
-./install-cursor.sh uninstall shipwright
-./install-cursor.sh uninstall handoff
-```
+after source edits.
 
 ### opencode
 
@@ -110,3 +113,64 @@ installation, run the installer from that repository and pass `--project`:
 ```sh
 /path/to/agent-plugins/install-opencode.sh install reviewer --project
 ```
+
+## Uninstall
+
+There is no single cross-harness uninstall. Use the matching harness below.
+
+### Codex
+
+```sh
+codex plugin remove reviewer@agent-plugins
+codex plugin remove shipwright@agent-plugins
+codex plugin remove handoff@agent-plugins
+```
+
+`homey` is not a Codex plugin.
+
+### Claude Code
+
+```sh
+claude plugin uninstall reviewer@agent-plugins
+claude plugin uninstall homey@agent-plugins
+claude plugin uninstall shipwright@agent-plugins
+claude plugin uninstall handoff@agent-plugins
+```
+
+If the plugin was installed with a non-default scope, pass `--scope user`,
+`--scope project`, or `--scope local` to match the install. You can also use
+`/plugin` in a Claude Code session to uninstall interactively.
+
+### Cursor
+
+**Marketplace installs (durable):** Cursor does **not** ship a CLI uninstall for
+marketplace plugins. Remove each plugin from **Customize → Plugins** (or the
+Plugins UI): uninstall `reviewer`, `shipwright`, and/or `handoff` there.
+`homey` is not a Cursor plugin.
+
+**Local iteration copies only** (`~/.cursor/plugins/local`):
+
+```sh
+./install-cursor.sh uninstall reviewer
+./install-cursor.sh uninstall shipwright
+./install-cursor.sh uninstall handoff
+```
+
+Local uninstall does not remove a marketplace install, and vice versa.
+
+### opencode
+
+```sh
+./install-opencode.sh uninstall reviewer
+./install-opencode.sh uninstall handoff
+```
+
+If you installed with `--project` / `-p`, uninstall the same way:
+
+```sh
+./install-opencode.sh uninstall reviewer --project
+./install-opencode.sh uninstall handoff --project
+```
+
+`shipwright` and `homey` have no opencode port, so there is nothing to uninstall
+for them on opencode.
