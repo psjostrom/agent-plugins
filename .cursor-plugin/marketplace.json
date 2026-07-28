@@ -10,6 +10,22 @@
   },
   "plugins": [
     {
+      "name": "reviewer",
+      "source": "./plugins/reviewer",
+      "description": "Risk-based parallel review for pull requests and local changes with scored findings.",
+      "version": "1.1.0",
+      "author": {
+        "name": "psjostrom"
+      },
+      "keywords": [
+        "code-review",
+        "review",
+        "subagents",
+        "pr-review"
+      ],
+      "category": "development"
+    },
+    {
       "name": "shipwright",
       "source": "./plugins/shipwright",
       "description": "Strict end-to-end development with adaptive subagents, independent review, and real verification.",
