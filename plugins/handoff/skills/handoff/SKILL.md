@@ -66,8 +66,8 @@ Then write `$dossier_dir/<slug>-YYYYMMDD-HHMM.md` per [references/dossier.md](re
 
 Report:
 
-- Repo-relative dossier path
+- Absolute dossier path (and repo-relative form if useful)
 - Chosen tier
-- The resume prompt line
+- The resume prompt block (absolute path + worktree + branch — see [references/dossier.md](references/dossier.md))
 
 Stop. Do not continue the original implementation task unless the user asks.

@@ -50,11 +50,15 @@ Use these sections in order, with these headings:
 
 **Handoff metadata** — `created_at`, `tier` (`standard`|`frontier`), `recommended_tier` (if different from override), source harness if known, optional outgoing model note. Never invent secrets.
 
-**Resume prompt** — A single fenced line the user can paste into a new chat, for example:
+**Resume prompt** — A single fenced block the user can paste into a new chat. Always use the **absolute** dossier path plus worktree path and branch so a receiver on the wrong checkout can still open the file and learn where to go. Example:
 
 ```text
-Continue from the handoff dossier at .handoff/<filename>. Read it fully, verify the workspace, then execute the next actions for a <tier> agent.
+Continue from the handoff dossier at <absolute-path-to-dossier>.
+Worktree: <absolute-worktree-root> | Branch: <branch-name>
+Read it fully, verify the workspace, then execute the next actions for a <tier> agent.
 ```
+
+Do **not** use only a repo-relative `.handoff/...` path in the resume prompt — different worktrees and repos cannot open it, and the receiver then cannot discover the correct branch from the dossier.
 
 ## Emphasis by tier
 
