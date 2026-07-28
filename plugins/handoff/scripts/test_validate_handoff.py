@@ -76,6 +76,40 @@ class HandoffValidatorTests(unittest.TestCase):
         self.write_json(".cursor-plugin/marketplace.json", data)
         self.assert_error("missing handoff plugin entry")
 
+    def test_valid_bundle_has_no_errors(self) -> None:
+        self.assertEqual([], validate_bundle(self.repo_root))
+
+    def test_rejects_disable_model_invocation_true(self) -> None:
+        path = self.path("plugins/handoff/skills/handoff/SKILL.md")
+        text = path.read_text(encoding="utf-8")
+        path.write_text(
+            text.replace(
+                "name: handoff\n",
+                "name: handoff\ndisable-model-invocation: true\n",
+            ),
+            encoding="utf-8",
+        )
+        self.assert_error("must not set disable-model-invocation: true")
+
+    def test_rejects_fat_claude_shell(self) -> None:
+        path = self.path("plugins/handoff/commands/handoff.md")
+        path.write_text(
+            path.read_text(encoding="utf-8") + "\nPrefer **standard** when\n",
+            encoding="utf-8",
+        )
+        self.assert_error("thin shell must not host shared workflow prose")
+
+    def test_reports_wrong_skill_description(self) -> None:
+        path = self.path("plugins/handoff/skills/handoff/SKILL.md")
+        path.write_text(
+            path.read_text(encoding="utf-8").replace(
+                validator.SKILL_DESCRIPTION,
+                "wrong description",
+            ),
+            encoding="utf-8",
+        )
+        self.assert_error("skill frontmatter description must match SKILL_DESCRIPTION")
+
 
 if __name__ == "__main__":
     unittest.main()

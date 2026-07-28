@@ -5,6 +5,7 @@ Personal plugins for Claude Code, Codex, Cursor, and opencode.
 - `reviewer` — risk-based parallel review for pull requests and local changes.
 - `homey` — Homey Pro flow management for Claude Code.
 - `shipwright` — strict end-to-end development via `$shipwright:shipwright` in Codex, `/shipwright:shipwright` in Claude Code, or `/shipwright` in Cursor.
+- `handoff` — write `.handoff/` dossiers for standard/frontier continuation via `$handoff:handoff` / `/handoff:handoff` / `/handoff`.
 
 ## Install
 
@@ -16,6 +17,7 @@ Add this repository as a marketplace, then install the plugins you want:
 codex plugin marketplace add psjostrom/agent-plugins
 codex plugin add reviewer@agent-plugins
 codex plugin add shipwright@agent-plugins
+codex plugin add handoff@agent-plugins
 ```
 
 Start a new Codex task after installation so the installed skills are available.
@@ -36,6 +38,7 @@ claude plugin marketplace add psjostrom/agent-plugins
 claude plugin install reviewer@agent-plugins
 claude plugin install homey@agent-plugins
 claude plugin install shipwright@agent-plugins
+claude plugin install handoff@agent-plugins
 ```
 
 Reload plugins in an active session with `/reload-plugins`, or start a new
@@ -64,8 +67,8 @@ Add the marketplace once, then install each plugin you want from it.
 
 From the imported marketplace, install each plugin you want (user or project
 scope). Currently listed: shipwright (`/shipwright`; requires Superpowers
-6.1.1+ as a separate Cursor marketplace plugin) and reviewer
-(`/parallel-review`, or “use parallel-review”).
+6.1.1+ as a separate Cursor marketplace plugin), reviewer
+(`/parallel-review`, or “use parallel-review”), and handoff (`/handoff`).
 
 #### Local iteration (plugin development only)
 
@@ -76,6 +79,7 @@ this repo's installer copies the plugin tree:
 ```sh
 ./install-cursor.sh install reviewer
 ./install-cursor.sh install shipwright
+./install-cursor.sh install handoff
 ./install-cursor.sh list
 ```
 
@@ -89,13 +93,14 @@ after source edits. Uninstall with:
 
 ### opencode
 
-opencode currently supports the `reviewer` plugin. Clone this repository, then
-run the installer from its root:
+opencode currently supports the `reviewer` and `handoff` plugins. Clone this
+repository, then run the installer from its root:
 
 ```sh
 git clone https://github.com/psjostrom/agent-plugins.git
 cd agent-plugins
 ./install-opencode.sh install reviewer
+./install-opencode.sh install handoff
 ```
 
 This installs global symlinks under `~/.config/opencode/`. For a repository-only
