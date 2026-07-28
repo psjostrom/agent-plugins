@@ -13,7 +13,6 @@ Parse invoke arguments for a tier token (case-insensitive):
 
 - `standard` → tier `standard`
 - `frontier` → tier `frontier`
-- `mid` → tier `standard` (alias only; write `standard` in the dossier)
 
 If an override is present, use it and **do not** ask for confirmation.
 
@@ -37,4 +36,4 @@ Ask exactly (substitute the tier):
 
 > I recommend a \<tier\> agent for this one — do you agree?
 
-Proceed only after yes, or after the user names `standard` / `frontier` / `mid` (`mid` → write `standard`). If they reject without choosing a recognized tier, stop and do not write a dossier.
+Proceed only after yes, or after the user names `standard` / `frontier`. If they reject without choosing a recognized tier, stop and do not write a dossier.

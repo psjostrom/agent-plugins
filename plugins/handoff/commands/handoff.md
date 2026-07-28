@@ -19,6 +19,6 @@ Read completely, in order (plugin-absolute paths):
 
 ## Claude argument parsing
 
-Before following the shared workflow, parse `$ARGUMENTS` for a tier token (`standard`, `frontier`, or `mid`). Pass the result into shared tier selection.
+Before following the shared workflow, parse `$ARGUMENTS` for a tier token (`standard`, `frontier`). Pass the result into shared tier selection.
 
 Then execute the shared workflow end-to-end. Do not redefine dossier sections or tier heuristics here.

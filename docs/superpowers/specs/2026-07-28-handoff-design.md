@@ -120,7 +120,6 @@ Also update:
 Overrides and aliases:
 
 - Primary flags: `standard`, `frontier`
-- Optional aliases in argument parsing: `mid` → `standard` (document in skill; prefer primary names in dossiers)
 
 ## Workflow
 

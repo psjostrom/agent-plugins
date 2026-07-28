@@ -40,4 +40,4 @@ Read completely, in order, using absolute paths under `$SHARED_ROOT`:
 
 ## opencode argument parsing
 
-Parse `$ARGUMENTS` for `standard`, `frontier`, or `mid`, then execute the shared workflow. Do not duplicate dossier or tier prose here.
+Parse `$ARGUMENTS` for `standard`, `frontier`, then execute the shared workflow. Do not duplicate dossier or tier prose here.

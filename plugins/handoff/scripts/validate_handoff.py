@@ -77,7 +77,6 @@ DOSSIER_MARKERS = (
 TIER_MARKERS = (
     "standard",
     "frontier",
-    "mid",
     "When unsure, recommend **standard**",
     "Prefer **standard** when",
     "Prefer **frontier** when",

@@ -46,7 +46,7 @@ Do not stash, commit, clean, or otherwise mutate the dirty tree as part of hando
 
 Follow [references/tier-selection.md](references/tier-selection.md).
 
-- Explicit `standard` / `frontier` (or `mid`) override → use it; do not ask.
+- Explicit `standard` / `frontier` override → use it; do not ask.
 - Else recommend, then ask: `I recommend a <tier> agent for this one — do you agree?`
 - Stop if rejected without a tier choice.
 
