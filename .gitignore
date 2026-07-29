@@ -1,2 +1,8 @@
 .worktrees/
 .DS_Store
+
+# superpowers ephemeral artifacts (plans are consumed during implementation)
+docs/superpowers/
+
+# superpowers brainstorm sessions
+.superpowers/
