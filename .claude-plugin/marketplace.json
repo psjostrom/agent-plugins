@@ -57,6 +57,22 @@
         "qa"
       ],
       "category": "development"
+    },
+    {
+      "name": "handoff",
+      "source": "./plugins/handoff",
+      "description": "Creates self-contained handoff dossiers so a fresh standard or frontier agent can continue a task.",
+      "version": "1.0.0",
+      "author": {
+        "name": "psjostrom"
+      },
+      "keywords": [
+        "handoff",
+        "context",
+        "dossier",
+        "agent-transfer"
+      ],
+      "category": "development"
     }
   ]
 }

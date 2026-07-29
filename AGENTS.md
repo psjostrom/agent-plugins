@@ -14,6 +14,9 @@ These instructions apply to the whole repository.
   opencode port is present.
 - `plugins/homey/` is a Claude plugin for Homey Pro flow management. Treat Homey
   commands as potentially state-changing against a real local Homey instance.
+- `plugins/handoff/` is a cross-platform handoff dossier plugin (shared
+  `skills/handoff/`, thin Claude/opencode command shells, Codex/Cursor skill
+  discovery).
 - `.agents/plugins/marketplace.json` is the local Codex marketplace entry.
   `.claude-plugin/marketplace.json` is the Claude marketplace entry.
   `.cursor-plugin/marketplace.json` is the Cursor marketplace entry. Prefer
@@ -33,6 +36,8 @@ These instructions apply to the whole repository.
 - Preserve platform boundaries: Claude command/agent files, Codex skill files,
   and opencode agent/command files are separate surfaces, but behavior that is
   intentionally mirrored should stay consistent across all supported agents.
+- For handoff, change behavior only in `skills/handoff/`; Claude and opencode
+  command shells must stay thin.
 - Reviewer role parity is required across all supported reviewer surfaces. If a
   reviewer role exists for Claude Code, Codex, Cursor, or opencode, it must exist
   and be wired for all four unless an intentional exception is documented in the
@@ -60,7 +65,7 @@ These instructions apply to the whole repository.
 
 - Use Conventional Commits format: `<type>(<scope>): <description> (#PR)`
 - Types: `feat`, `fix`, `docs`, `chore`, `refactor`, `ci`, `test`
-- Scope: `reviewer`, `shipwright`, `homey`, `ci`, or omit for cross-cutting
+- Scope: `reviewer`, `shipwright`, `handoff`, `homey`, `ci`, or omit for cross-cutting
 - Subject line ≤50 chars, imperative mood, no period
 - Reference PR number in parentheses at end
 - Examples:
@@ -97,4 +102,16 @@ These instructions apply to the whole repository.
 
   ```sh
   python3 -m unittest plugins/shipwright/scripts/test_validate_shipwright.py
+  ```
+
+- Run the Handoff bundle validator after changing handoff platform files:
+
+  ```sh
+  python3 plugins/handoff/scripts/validate_handoff.py
+  ```
+
+- Run the Handoff validator unit tests after changing validator logic:
+
+  ```sh
+  python3 -m unittest plugins/handoff/scripts/test_validate_handoff.py
   ```
