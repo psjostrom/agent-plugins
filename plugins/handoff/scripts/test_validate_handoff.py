@@ -184,7 +184,11 @@ class HandoffValidatorTests(unittest.TestCase):
     def test_rejects_dossier_without_receiver_tier_gate(self) -> None:
         path = self.path("plugins/handoff/skills/handoff/references/dossier.md")
         pristine = path.read_text(encoding="utf-8")
-        for marker in ("Tier gate", "proceed anyway", "Required tier"):
+        markers = (
+            *validator.DOSSIER_RECEIVER_STARTUP_MARKERS,
+            *validator.DOSSIER_RESUME_MARKERS,
+        )
+        for marker in markers:
             self.assertIn(marker, pristine)
             path.write_text(pristine.replace(marker, ""), encoding="utf-8")
             self.assert_error(f"missing required marker '{marker}'")
@@ -193,7 +197,11 @@ class HandoffValidatorTests(unittest.TestCase):
     def test_rejects_tier_ref_without_receiver_classification(self) -> None:
         path = self.path("plugins/handoff/skills/handoff/references/tier-selection.md")
         pristine = path.read_text(encoding="utf-8")
-        for marker in ("Receiver classification", "proceed anyway"):
+        markers = (
+            "Receiver classification",
+            *validator.TIER_RECEIVER_CLASSIFICATION_MARKERS,
+        )
+        for marker in markers:
             self.assertIn(marker, pristine)
             path.write_text(pristine.replace(marker, ""), encoding="utf-8")
             self.assert_error(f"missing required marker '{marker}'")

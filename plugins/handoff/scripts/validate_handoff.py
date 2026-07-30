@@ -80,6 +80,7 @@ DOSSIER_RECEIVER_STARTUP_MARKERS = (
     "unknown",
     "unlabeled",
     "proceed anyway",
+    "After the gate passes",
 )
 
 DOSSIER_RECEIVER_STARTUP_ORDER = (
