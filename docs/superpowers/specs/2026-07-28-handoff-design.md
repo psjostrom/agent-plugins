@@ -7,7 +7,7 @@ Add a cross-platform **handoff** plugin that writes a self-contained handoff dos
 ## Non-goals
 
 - No takeover / resume skill; the dossier itself is the handoff contract.
-- No automatic dispatch or model switching of the next agent.
+- No automatic dispatch or model switching of the next agent (soft receiver tier gate in the dossier only — under-tier agents must stop and ask; harnesses cannot hard-block model selection).
 - No Shipwright ledger coupling (a Shipwright path may appear as a workspace fact if relevant).
 - No committing dossiers to git; local exclude of `.handoff/` only.
 - No mutating the dirty worktree as part of handoff (no stash/commit/cleanup).
@@ -28,7 +28,7 @@ Packaging follows the reviewer shared-core / Shipwright pattern: one shared skil
 | Topic | Choice |
 | --- | --- |
 | Artifact location | `.handoff/<slug>-YYYYMMDD-HHMM.md` in the repo, locally gitignored |
-| Create vs consume | Create-only; dossier includes receiver startup instructions |
+| Create vs consume | Create-only; dossier includes receiver startup instructions **with a soft tier capability gate** |
 | Packaging | Standalone `plugins/handoff/` |
 | Shared vs harness | ~99% shared behavior in `skills/handoff/`; thin adapters only |
 | Tier confirmation | Always ask unless user already passed `/handoff standard` or `/handoff frontier` |
@@ -164,7 +164,7 @@ Stop and ask (do not write a partial dossier) when:
 
 ### Shared spine (every dossier)
 
-1. **Receiver startup** — read this file fully; verify workspace matches; state next action before editing
+1. **Receiver startup** — **tier gate first** (classify live model vs metadata `tier`; under-tier / Auto / unknown for `frontier` → stop and ask to switch or await `proceed anyway`; do not explore or edit until then); then read fully; verify workspace; restate next action before editing
 2. **Mission** — goal, definition of done, explicit non-goals
 3. **Workspace** — repo, worktree path, branch, HEAD, remotes if relevant, dirty/untracked summary
 4. **State of work** — done / in progress / not started; key paths; tests/commands run and results
@@ -172,7 +172,7 @@ Stop and ask (do not write a partial dossier) when:
 6. **Risks & open questions**
 7. **Next actions** — ordered; concrete enough for the chosen tier
 8. **Handoff metadata** — created-at, source harness if known, recommended/chosen tier, optional outgoing model note
-9. **Resume prompt** — one copy-paste line for the next chat
+9. **Resume prompt** — one copy-paste block for the next chat (absolute dossier path, worktree, branch, **Required tier**, and an explicit stop-if-under-tier instruction)
 
 ### Emphasis by tier
 
@@ -232,6 +232,7 @@ python3 -m unittest plugins/handoff/scripts/test_validate_handoff.py
 - Invoking the skill on any of the four harnesses produces one locally-ignored markdown dossier under `.handoff/` following the shared spine.
 - Tier override skips confirmation; recommendation path always confirms.
 - Standard vs frontier dossiers differ in emphasis as specified, not in section inventory.
+- Receiver startup and resume prompt instruct under-tier / Auto / unknown models to stop before work on a `frontier` dossier (soft gate; user may override with `proceed anyway`).
 - Adding a fifth harness requires only thin adapter + reference + validator/marketplace updates.
 - Validator passes on a complete bundle.
 

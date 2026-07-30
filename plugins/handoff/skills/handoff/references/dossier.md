@@ -34,7 +34,11 @@ Use these sections in order, with these headings:
 
 ### Section contents
 
-**Receiver startup** — Instruct the receiving agent to: read this file fully; verify workspace fields match reality; restate the next action; then begin work. Do not edit before that.
+**Receiver startup** — Instruct the receiving agent to follow these steps **in order**. Do not explore the repo, edit files, or execute next actions until the tier gate passes (or the user overrides).
+
+1. **Tier gate (first).** Read `tier` from Handoff metadata. Classify the model running this chat using [tier-selection.md](tier-selection.md) receiver classification. A stronger model may take a `standard` dossier; a weaker / Auto / unknown model must **not** take a `frontier` dossier.
+2. **On under-tier mismatch:** Stop immediately. Reply with a short mismatch warning only: required tier, that the current model appears below it, and that the user should switch models and re-open — or explicitly reply `proceed anyway` to override. Do not verify workspace, search the tree, or start work until then.
+3. **After the gate passes** (matching tier, over-tier, or explicit `proceed anyway`): read this file fully; verify workspace fields match reality; restate the next action in one sentence; then begin work. Do not edit before that restatement.
 
 **Mission** — Goal, definition of done, explicit non-goals.
 
@@ -50,12 +54,12 @@ Use these sections in order, with these headings:
 
 **Handoff metadata** — `created_at`, `tier` (`standard`|`frontier`), `recommended_tier` (if different from override), source harness if known, optional outgoing model note. Never invent secrets.
 
-**Resume prompt** — A single fenced block the user can paste into a new chat. Always use the **absolute** dossier path plus worktree path and branch so a receiver on the wrong checkout can still open the file and learn where to go. Example:
+**Resume prompt** — A single fenced block the user can paste into a new chat. Always use the **absolute** dossier path plus worktree path, branch, and required tier so a receiver on the wrong checkout or wrong model class can still open the file and learn where to go. Example:
 
 ```text
 Continue from the handoff dossier at <absolute-path-to-dossier>.
-Worktree: <absolute-worktree-root> | Branch: <branch-name>
-Read it fully, verify the workspace, then execute the next actions for a <tier> agent.
+Worktree: <absolute-worktree-root> | Branch: <branch-name> | Required tier: <tier>
+Open this chat on a <tier>-class model. Read Receiver startup first — if your model is below that tier, stop and ask to switch; do not begin work.
 ```
 
 Do **not** use only a repo-relative `.handoff/...` path in the resume prompt — different worktrees and repos cannot open it, and the receiver then cannot discover the correct branch from the dossier.

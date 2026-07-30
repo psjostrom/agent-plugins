@@ -70,6 +70,9 @@ DOSSIER_MARKERS = (
     "Next actions",
     "Handoff metadata",
     "Resume prompt",
+    "Tier gate",
+    "proceed anyway",
+    "Required tier",
     "standard",
     "frontier",
 )
@@ -80,6 +83,8 @@ TIER_MARKERS = (
     "When unsure, recommend **standard**",
     "Prefer **standard** when",
     "Prefer **frontier** when",
+    "Receiver classification",
+    "proceed anyway",
 )
 
 THIN_SHELL_REQUIRED = (

@@ -181,6 +181,25 @@ class HandoffValidatorTests(unittest.TestCase):
         )
         self.assert_error("adapter must not host shared workflow prose")
 
+    def test_rejects_dossier_without_receiver_tier_gate(self) -> None:
+        path = self.path("plugins/handoff/skills/handoff/references/dossier.md")
+        text = path.read_text(encoding="utf-8")
+        for marker in ("Tier gate", "proceed anyway", "Required tier"):
+            text = text.replace(marker, "")
+        path.write_text(text, encoding="utf-8")
+        self.assert_error("missing required marker 'Tier gate'")
+
+    def test_rejects_tier_ref_without_receiver_classification(self) -> None:
+        path = self.path("plugins/handoff/skills/handoff/references/tier-selection.md")
+        text = path.read_text(encoding="utf-8")
+        path.write_text(
+            text.replace("## Receiver classification\n", "## Removed section\n").replace(
+                "proceed anyway", ""
+            ),
+            encoding="utf-8",
+        )
+        self.assert_error("missing required marker 'Receiver classification'")
+
     def test_rejects_marketplace_wrong_description_when_present(self) -> None:
         data = json.loads(
             self.path(".cursor-plugin/marketplace.json").read_text(encoding="utf-8")
