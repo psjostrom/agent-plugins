@@ -164,7 +164,7 @@ Stop and ask (do not write a partial dossier) when:
 
 ### Shared spine (every dossier)
 
-1. **Receiver startup** — **tier gate first** (classify live model vs metadata `tier`; under-tier / Auto / unknown for `frontier` → stop and ask to switch or await `proceed anyway`; do not explore or edit until then); then read fully; verify workspace; restate next action before editing
+1. **Receiver startup** — **tier gate first** (classify live model vs metadata `tier`; for `frontier`, under-tier / Auto / unknown / unlabeled → stop and ask to switch or await `proceed anyway`; do not explore or edit until then); then read fully; verify workspace; restate next action before editing
 2. **Mission** — goal, definition of done, explicit non-goals
 3. **Workspace** — repo, worktree path, branch, HEAD, remotes if relevant, dirty/untracked summary
 4. **State of work** — done / in progress / not started; key paths; tests/commands run and results
@@ -172,7 +172,7 @@ Stop and ask (do not write a partial dossier) when:
 6. **Risks & open questions**
 7. **Next actions** — ordered; concrete enough for the chosen tier
 8. **Handoff metadata** — created-at, source harness if known, recommended/chosen tier, optional outgoing model note
-9. **Resume prompt** — one copy-paste block for the next chat (absolute dossier path, worktree, branch, **Required tier**, and an explicit stop-if-under-tier instruction)
+9. **Resume prompt** — one copy-paste block for the next chat (absolute dossier path, worktree, branch, **Required tier**, and the same under-tier / Auto / unknown / unlabeled stop + `proceed anyway` rule)
 
 ### Emphasis by tier
 
@@ -232,7 +232,7 @@ python3 -m unittest plugins/handoff/scripts/test_validate_handoff.py
 - Invoking the skill on any of the four harnesses produces one locally-ignored markdown dossier under `.handoff/` following the shared spine.
 - Tier override skips confirmation; recommendation path always confirms.
 - Standard vs frontier dossiers differ in emphasis as specified, not in section inventory.
-- Receiver startup and resume prompt instruct under-tier / Auto / unknown models to stop before work on a `frontier` dossier (soft gate; user may override with `proceed anyway`).
+- Receiver startup and resume prompt instruct under-tier / Auto / unknown / unlabeled receivers to stop before work on a `frontier` dossier (soft gate; user may override with `proceed anyway`).
 - Adding a fifth harness requires only thin adapter + reference + validator/marketplace updates.
 - Validator passes on a complete bundle.
 

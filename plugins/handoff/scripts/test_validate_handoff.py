@@ -183,22 +183,35 @@ class HandoffValidatorTests(unittest.TestCase):
 
     def test_rejects_dossier_without_receiver_tier_gate(self) -> None:
         path = self.path("plugins/handoff/skills/handoff/references/dossier.md")
-        text = path.read_text(encoding="utf-8")
+        pristine = path.read_text(encoding="utf-8")
         for marker in ("Tier gate", "proceed anyway", "Required tier"):
-            text = text.replace(marker, "")
-        path.write_text(text, encoding="utf-8")
-        self.assert_error("missing required marker 'Tier gate'")
+            self.assertIn(marker, pristine)
+            path.write_text(pristine.replace(marker, ""), encoding="utf-8")
+            self.assert_error(f"missing required marker '{marker}'")
+            path.write_text(pristine, encoding="utf-8")
 
     def test_rejects_tier_ref_without_receiver_classification(self) -> None:
         path = self.path("plugins/handoff/skills/handoff/references/tier-selection.md")
-        text = path.read_text(encoding="utf-8")
-        path.write_text(
-            text.replace("## Receiver classification\n", "## Removed section\n").replace(
-                "proceed anyway", ""
-            ),
-            encoding="utf-8",
+        pristine = path.read_text(encoding="utf-8")
+        for marker in ("Receiver classification", "proceed anyway"):
+            self.assertIn(marker, pristine)
+            path.write_text(pristine.replace(marker, ""), encoding="utf-8")
+            self.assert_error(f"missing required marker '{marker}'")
+            path.write_text(pristine, encoding="utf-8")
+
+    def test_rejects_dossier_gate_markers_outside_startup_section(self) -> None:
+        path = self.path("plugins/handoff/skills/handoff/references/dossier.md")
+        pristine = path.read_text(encoding="utf-8")
+        startup_start = pristine.index("**Receiver startup**")
+        mission_start = pristine.index("**Mission**")
+        stripped = (
+            pristine[:startup_start]
+            + "**Receiver startup** — placeholder without gate.\n\n"
+            + pristine[mission_start:]
+            + "\nTier gate Auto unknown unlabeled proceed anyway Required tier\n"
         )
-        self.assert_error("missing required marker 'Receiver classification'")
+        path.write_text(stripped, encoding="utf-8")
+        self.assert_error("missing required marker 'Tier gate'")
 
     def test_rejects_marketplace_wrong_description_when_present(self) -> None:
         data = json.loads(
