@@ -853,6 +853,22 @@ class ShipwrightValidatorTests(unittest.TestCase):
         ):
             self.assertTrue(any(fragment in error for error in errors), errors)
 
+    def test_reports_missing_reduced_path_project_config_contract(self) -> None:
+        skill = "plugins/shipwright/skills/shipwright/SKILL.md"
+        self.replace(
+            skill,
+            "do not create or modify project-level configuration",
+            "project-level configuration may be added as needed",
+        )
+        errors = validate_bundle(self.repo_root)
+        self.assertTrue(
+            any(
+                "§3 reduced path no unrequested project config" in error
+                for error in errors
+            ),
+            errors,
+        )
+
     def test_reports_missing_linked_controller_effort_pr_disclosure(self) -> None:
         skill = "plugins/shipwright/skills/shipwright/SKILL.md"
         self.replace(

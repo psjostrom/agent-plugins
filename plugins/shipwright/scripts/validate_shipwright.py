@@ -855,6 +855,10 @@ def _validate_skill_and_contracts(
                 "§3 reduction never waives verification or QA",
             ),
             (
+                "do not create or modify project-level configuration",
+                "§3 reduced path no unrequested project config",
+            ),
+            (
                 "Recommended controller effort is not a precondition",
                 "shared controller effort disclosure rule",
             ),
