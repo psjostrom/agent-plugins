@@ -105,6 +105,7 @@ class ShipwrightValidatorTests(unittest.TestCase):
             "plugins/shipwright/skills/shipwright/agents/openai.yaml",
             "plugins/shipwright/evals/v1/claude-code-runbook.md",
             "plugins/shipwright/evals/v1/cursor-runbook.md",
+            "plugins/shipwright/evals/v1/codex-runbook.md",
         )
         for relative_path in paths:
             with self.subTest(path=relative_path):
@@ -260,6 +261,42 @@ class ShipwrightValidatorTests(unittest.TestCase):
             with self.subTest(case=case):
                 self.replace(runbook_path, f"`{case}`", f"`removed-{case}`")
                 self.assert_error(f"missing delegated Cursor case {case}")
+                self.replace(runbook_path, f"`removed-{case}`", f"`{case}`")
+
+    def test_reports_missing_codex_runbook_contracts(self) -> None:
+        runbook_path = "plugins/shipwright/evals/v1/codex-runbook.md"
+        required_markers = (
+            "## Prerequisites",
+            "## Safety boundaries",
+            "## Copy/paste prompt for Codex",
+            "## Required cases and repetitions",
+            "## Evidence bundle",
+            "## Result rubric",
+            "## Return template",
+            "Codex CLI 0.139.0 or newer",
+            "Superpowers 6.1.1 or newer",
+            "gpt-5.6-sol",
+            "$shipwright:shipwright",
+            "one broad smoke pass",
+            "3/3 exact passes",
+            "shipwright_prepare_codex_evaluation() {",
+            "shipwright_status<<END_SHIPWRIGHT_STATUS",
+            "END_SHIPWRIGHT_STATUS",
+            "Failure to create or read environment-seed.md makes the evaluation `UNVERIFIED`.",
+        )
+        for index, marker in enumerate(required_markers):
+            with self.subTest(marker=marker):
+                replacement = f"__missing_codex_contract_{index}__"
+                self.replace(runbook_path, marker, replacement)
+                self.assert_error("Codex runbook")
+                self.replace(runbook_path, replacement, marker)
+
+    def test_reports_every_missing_codex_runbook_case(self) -> None:
+        runbook_path = "plugins/shipwright/evals/v1/codex-runbook.md"
+        for case in validator.CODEX_RUNBOOK_CASES:
+            with self.subTest(case=case):
+                self.replace(runbook_path, f"`{case}`", f"`removed-{case}`")
+                self.assert_error(f"missing delegated Codex case {case}")
                 self.replace(runbook_path, f"`removed-{case}`", f"`{case}`")
 
     def test_requires_disable_model_invocation_frontmatter(self) -> None:
