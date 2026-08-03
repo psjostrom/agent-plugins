@@ -127,7 +127,7 @@ class ShipwrightValidatorTests(unittest.TestCase):
             "/shipwright:shipwright",
             "Claude Code 2.1.117 or newer",
             "Superpowers 6.1.1 or newer",
-            "claude-opus-4-7",
+            "claude-opus-4-6",
             "xhigh or stronger",
             "one broad smoke pass",
             "3/3 exact passes",
@@ -724,7 +724,7 @@ class ShipwrightValidatorTests(unittest.TestCase):
         )
         self.replace(
             "plugins/shipwright/skills/shipwright/references/claude-code.md",
-            "claude-opus-4-7",
+            "claude-opus-4-6",
             "claude-other",
         )
         self.replace(
@@ -768,7 +768,7 @@ class ShipwrightValidatorTests(unittest.TestCase):
         )
         self.replace(
             skill,
-            "absent effort is allowed only when that route defines none",
+            "absent effort is allowed only when that route defines none, or when the selected platform reference waives the effort dimension",
             "absent effort is always allowed",
         )
         self.replace(
@@ -1200,7 +1200,7 @@ class ShipwrightValidatorTests(unittest.TestCase):
         codex_manifest.unlink()
         self.replace(
             "plugins/shipwright/skills/shipwright/references/claude-code.md",
-            "claude-opus-4-7",
+            "claude-opus-4-6",
             "claude-other",
         )
         errors = validate_bundle(self.repo_root)
