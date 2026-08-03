@@ -41,7 +41,7 @@ Also verify the harness minimum and capabilities in its platform reference. A co
 
 ## 3. Reduce trivial work
 
-Only after §1 identifies the harness and the controller gate passes: if the work is tiny, mechanical, locally obvious, and does not justify independent subagents, route it to a smaller workflow and explain the reduction. Shipwright wording does not justify costly fan-out for a one-line or otherwise trivial change. The reduction path does not waive the controller gate or the requirement to read the platform reference.
+Only after §1 identifies the harness and the controller gate passes: if the work is tiny, mechanical, locally obvious, and does not justify independent subagents, route it to a smaller workflow and explain the reduction. Shipwright wording does not justify costly fan-out for a one-line or otherwise trivial change. The reduction path does not waive the controller gate or the requirement to read the platform reference. The reduced path may change only files required by the requested task; do not create or modify project-level configuration (for example `package.json`, lockfiles, build config, or CI config) unless the user asked for that change or explicitly approved it.
 
 ## 4. Approve the design and plan
 
