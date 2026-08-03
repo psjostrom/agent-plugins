@@ -41,7 +41,7 @@ Also verify the harness minimum and capabilities in its platform reference. A co
 
 ## 3. Reduce trivial work
 
-Only after §1 identifies the harness and the controller gate passes: if the work is tiny, mechanical, locally obvious, and does not justify independent subagents, route it to a smaller workflow and explain the reduction. Shipwright wording does not justify costly fan-out for a one-line or otherwise trivial change. The reduction path does not waive the controller gate or the requirement to read the platform reference.
+Only after §1 identifies the harness and the controller gate passes: if the work is tiny, mechanical, locally obvious, does not justify independent subagents, **and the verification surface it can affect is narrow**, route it to a smaller workflow and explain the reduction. Shipwright wording does not justify costly fan-out for a one-line or otherwise trivial change. A small diff with a wide verification or QA surface — for example a dependency bump that can break an app, device flow, or shared runtime — is not trivial; keep the full workflow. The reduction path does not waive the controller gate, the requirement to read the platform reference, §11 fresh verification, or §12 QA routing.
 
 ## 4. Approve the design and plan
 

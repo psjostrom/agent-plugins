@@ -812,6 +812,25 @@ class ShipwrightValidatorTests(unittest.TestCase):
         ):
             self.assertTrue(any(fragment in error for error in errors), errors)
 
+    def test_reports_missing_reduction_verification_surface_contracts(self) -> None:
+        skill = "plugins/shipwright/skills/shipwright/SKILL.md"
+        self.replace(
+            skill,
+            "and the verification surface it can affect is narrow",
+            "and the change looks cheap to implement",
+        )
+        self.replace(
+            skill,
+            "§11 fresh verification, or §12 QA routing",
+            "the controller gate, or the requirement to read the platform reference",
+        )
+        errors = validate_bundle(self.repo_root)
+        for fragment in (
+            "§3 verification-surface reduction criterion",
+            "§3 reduction never waives verification or QA",
+        ):
+            self.assertTrue(any(fragment in error for error in errors), errors)
+
     def test_reports_missing_linked_controller_effort_pr_disclosure(self) -> None:
         skill = "plugins/shipwright/skills/shipwright/SKILL.md"
         self.replace(
