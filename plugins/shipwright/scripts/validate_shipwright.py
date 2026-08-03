@@ -835,12 +835,8 @@ def _validate_skill_and_contracts(
                 "shared controller effort disclosure rule",
             ),
             (
-                "Disclose that effort evidence state in the completion report",
-                "controller effort completion disclosure",
-            ),
-            (
-                "authorized PR body",
-                "controller effort PR disclosure",
+                "Disclose that effort evidence state in the completion report and in any authorized PR body",
+                "controller effort completion and PR disclosure",
             ),
             (
                 "Never stop solely because controller effort is missing, weak, or unverifiable",
@@ -961,6 +957,14 @@ def _validate_skill_and_contracts(
             (
                 "Child effort is waived here because",
                 "Claude child effort waiver justification",
+            ),
+            (
+                "only when the schema has no effort selector and accepted child records do not attribute effort",
+                "Claude child effort waiver attribution condition",
+            ),
+            (
+                "If effort is attributable, validate it against the route floor even when the selector is absent",
+                "Claude attributable effort without selector",
             ),
             (
                 "Do not treat the child waiver and the controller disclosure rule as the same mechanism",

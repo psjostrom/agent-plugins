@@ -98,7 +98,7 @@ The evaluator and its agent must not modify Shipwright while testing it. Use no 
 After opening the fixture root as the workspace, confirming Shipwright resolves from the recorded fixture-local plugin symlink loading route or an explicitly authorized disposable host install of the same `shipwright_plugin_source`, and confirming Superpowers resolve, paste this prompt into a qualifying fresh session with Grok 4.5 as the controller:
 
 ```text
-Evaluate the Shipwright plugin loaded from the recorded checkout; do not implement or repair it. Read evaluation-input/environment-seed.md along with evaluation-input/cursor-runbook.md and evaluation-input/scenarios.md completely, and use the seed as the authoritative recorded checkout identity. Verify and record the active Cursor version, current-session resolved Grok 4.5 model, controller effort evidence state (resolved rank, below recommended, or unverifiable), resolved Superpowers version/root, fixture-local plugin symlink loading route, recorded repository commit, and recorded clean/dirty state before scoring behavior. Stop and report UNVERIFIED if Cursor lacks plugin discovery, Task subagents, or current-turn model evidence, Superpowers is below 6.1.1, current-session evidence does not prove Grok 4.5, or the environment seed cannot be read. Missing or weaker-than-recommended effort is recorded, not UNVERIFIED. Accept compatible newer Cursor and Superpowers versions.
+Evaluate the Shipwright plugin loaded from the recorded checkout; do not implement or repair it. Read evaluation-input/environment-seed.md along with evaluation-input/cursor-runbook.md and evaluation-input/scenarios.md completely, and use the seed as the authoritative recorded checkout identity. Verify and record the active Cursor version, current-session Grok 4.5 family evidence, controller effort evidence state (resolved rank, below recommended, or unverifiable), resolved Superpowers version/root, fixture-local plugin symlink loading route, recorded repository commit, and recorded clean/dirty state before scoring behavior. Stop and report UNVERIFIED if Cursor lacks plugin discovery, Task subagents, or current-turn model evidence, Superpowers is below 6.1.1, current-session evidence does not prove Grok 4.5 family, or the environment seed cannot be read. Missing or weaker-than-recommended effort is recorded, not UNVERIFIED. Accept compatible newer Cursor and Superpowers versions.
 
 Use /shipwright only in this disposable fixture repository with synthetic local data. Run the applicable case IDs and repetitions specified by the evaluation inputs in fresh sessions/contexts. Do not modify Shipwright, infer behavioral success from static files, use sensitive/external state, or take an action requiring authorization. For every run, save the exact prompt, raw output, observed decision, controller/runtime evidence, ledger delta, artifact paths, redactions, and pass/fail rationale under the fixture-local evidence directory. Produce the evidence bundle and return template exactly as described. Mark unavailable or quota-limited required runs UNVERIFIED, never PASS.
 ```
@@ -113,7 +113,7 @@ Then run fresh repetitions to the committed scenario thresholds. Hard gates and 
 
 The setup creates `evidence_dir="$fixture_root/.superpowers/sdd/evals/$run_id"`; write evidence only there. The fixture repository's `.git/info/exclude` ignores `.superpowers/`, and `git -C "$fixture_root" check-ignore -q "$evidence_dir"` must succeed before evaluation.
 
-- `environment.md`: `shipwright_commit`, `shipwright_status`, Cursor version, session/run ID, resolved Grok 4.5 model/effort evidence, Superpowers version/root, fixture-local plugin symlink loading route, fixture description, and redactions.
+- `environment.md`: `shipwright_commit`, `shipwright_status`, Cursor version, session/run ID, current-session Grok 4.5 family evidence, controller effort evidence state, Superpowers version/root, fixture-local plugin symlink loading route, fixture description, and redactions.
 - `runs/gate-cursor-pass/1/prompt.md` illustrates the per-case/per-repetition prompt path; use that layout for every case and repetition.
 - `runs/gate-cursor-pass/1/raw.md` illustrates the complete redacted agent-output path.
 - `runs/gate-cursor-pass/1/score.md` illustrates the score path containing expected and observed decisions, controller evidence, dependency/tool availability, ledger delta, artifact paths, result, rationale, and redactions.
@@ -136,7 +136,8 @@ Shipwright Cursor evaluation
 Repository commit:
 Cursor version:
 Session/run IDs:
-Resolved Grok 4.5 model/effort evidence:
+Current-session Grok 4.5 family evidence:
+Controller effort evidence state:
 Superpowers version/root:
 Plugin-loading route:
 Fixture summary:
