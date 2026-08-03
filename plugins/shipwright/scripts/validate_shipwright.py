@@ -632,6 +632,22 @@ def _require_markers(
             errors.append(f"{_display(relative_path)} is missing {label}: {marker!r}")
 
 
+def _forbid_markers(
+    content: Optional[str],
+    markers: tuple[tuple[str, str], ...],
+    relative_path: Path,
+    errors: list[str],
+) -> None:
+    if content is None:
+        return
+    active = _active_markdown(content)
+    for marker, label in markers:
+        if marker in active:
+            errors.append(
+                f"{_display(relative_path)} must not contain {label}: {marker!r}"
+            )
+
+
 def _active_markdown(markdown: str) -> str:
     """Return Markdown text outside fenced code blocks and HTML comments."""
 
@@ -939,6 +955,14 @@ def _validate_skill_and_contracts(
     _require_markers(
         claude_text,
         (
+            (
+                "Require a resolved Opus model at version `4.6` or newer",
+                "Claude controller gate numeric floor",
+            ),
+            (
+                "compare that version numerically against the `4.6` floor",
+                "Claude controller gate numeric comparison",
+            ),
             ("claude-opus-4-6", "Claude controller gate minimum model version"),
             (
                 "Recommended controller effort rank is `xhigh` or stronger",
@@ -981,6 +1005,21 @@ def _validate_skill_and_contracts(
             (
                 "Never stop solely because controller effort is missing, weak, or unverifiable",
                 "Claude controller effort never hard-stops",
+            ),
+        ),
+        CLAUDE_REFERENCE,
+        errors,
+    )
+    _forbid_markers(
+        claude_text,
+        (
+            (
+                "Accept only exact",
+                "Claude exact-version acceptance pin",
+            ),
+            (
+                "until this reference explicitly allowlists",
+                "Claude future-model allowlist brittleness",
             ),
         ),
         CLAUDE_REFERENCE,

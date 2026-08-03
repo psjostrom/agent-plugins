@@ -737,6 +737,26 @@ class ShipwrightValidatorTests(unittest.TestCase):
         self.assertTrue(any("Claude controller gate" in error for error in errors), errors)
         self.assertTrue(any("Cursor controller gate" in error for error in errors), errors)
 
+    def test_reports_claude_exact_version_pin_regression(self) -> None:
+        claude = "plugins/shipwright/skills/shipwright/references/claude-code.md"
+        self.replace(
+            claude,
+            "Require a resolved Opus model at version `4.6` or newer.",
+            "Accept only exact active model ID `claude-opus-4-6`.",
+        )
+        self.replace(
+            claude,
+            "An Opus version at or above the floor is accepted without editing this reference; record it as newer than the last behaviorally tested version.",
+            "A future model, renamed model, or generic family label is not accepted until this reference explicitly allowlists it from first-party compatibility evidence.",
+        )
+        errors = validate_bundle(self.repo_root)
+        for fragment in (
+            "Claude controller gate numeric floor",
+            "Claude exact-version acceptance pin",
+            "Claude future-model allowlist brittleness",
+        ):
+            self.assertTrue(any(fragment in error for error in errors), errors)
+
     def test_reports_missing_cursor_family_only_effort_contracts(self) -> None:
         cursor = "plugins/shipwright/skills/shipwright/references/cursor.md"
         self.replace(cursor, "Cursor Grok 4.5", "Cursor Grok-other")
