@@ -951,6 +951,25 @@ class ShipwrightValidatorTests(unittest.TestCase):
         ):
             self.assertTrue(any(fragment in error for error in errors), errors)
 
+    def test_reports_missing_argent_mcp_probe_contracts(self) -> None:
+        skill = "plugins/shipwright/skills/shipwright/SKILL.md"
+        self.replace(
+            skill,
+            "loaded argent MCP toolset",
+            "argent CLI on PATH",
+        )
+        self.replace(
+            skill,
+            "CLI presence alone does not establish the capability",
+            "CLI presence is enough to proceed",
+        )
+        errors = validate_bundle(self.repo_root)
+        for fragment in (
+            "Argent mobile QA MCP-tool probe",
+            "Argent CLI not sufficient for mobile QA",
+        ):
+            self.assertTrue(any(fragment in error for error in errors), errors)
+
     def test_reports_each_missing_standalone_qa_outcome_definition(self) -> None:
         skill = "plugins/shipwright/skills/shipwright/SKILL.md"
         original = self.path(skill).read_text(encoding="utf-8")

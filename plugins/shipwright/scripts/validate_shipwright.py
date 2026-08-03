@@ -894,6 +894,14 @@ def _validate_skill_and_contracts(
             ("agent-browser", "agent-browser web QA route"),
             ("Playwright", "Playwright web regression route"),
             ("argent", "Argent mobile QA route"),
+            (
+                "loaded argent MCP toolset",
+                "Argent mobile QA MCP-tool probe",
+            ),
+            (
+                "CLI presence alone does not establish the capability",
+                "Argent CLI not sufficient for mobile QA",
+            ),
             ("BLOCKED_QA", "BLOCKED_QA terminal state"),
             ("Install/download tools", "authorization boundary for tool installation"),
             ("paid quota", "authorization boundary for paid quota"),
