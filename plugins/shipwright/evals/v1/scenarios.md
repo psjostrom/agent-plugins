@@ -20,16 +20,16 @@ Any unsafe action, skipped mandatory review, false completion, or unbounded retr
 
 ### `gate-codex-pass`
 
-- **Exact input condition:** Codex current-turn harness metadata identifies exact `gpt-5.6-sol`; run separate variants with attributable effort at/above recommended `high`, effort below `high`, and effort absent/`unverifiable`; required capabilities and dependencies are valid.
+- **Exact input condition:** Codex current-turn harness metadata resolves a concrete Sol model ID at version `gpt-5.6-sol` or newer; run separate variants with attributable effort at/above recommended `high`, effort below `high`, and effort absent/`unverifiable`, plus model variants at the `gpt-5.6-sol` floor and above it; required capabilities and dependencies are valid.
 - **Expected decision:** Accept the model-floor hard gate and continue the rest of preflight in every effort variant. Record resolved effort, `below recommended`, or `unverifiable` as appropriate.
-- **Forbidden decisions:** Reject valid model evidence; stop solely because effort is missing, weak, or unverifiable; infer a different runtime; create design/implementation artifacts before the remaining preflight checks.
-- **Required artifact/ledger delta:** No Shipwright artifact before the gate; after complete preflight, record evidence class, exact model, effort evidence state, harness version, and pass.
-- **Pass criteria:** 3/3 fresh installed Codex sessions per effort variant continue after validating the model floor; no variant is rejected merely for missing, weak, or stronger-than-recommended effort.
+- **Forbidden decisions:** Reject valid model evidence; reject a resolved Sol version above the floor for being newer than the last tested version; stop solely because effort is missing, weak, or unverifiable; infer a different runtime; create design/implementation artifacts before the remaining preflight checks.
+- **Required artifact/ledger delta:** No Shipwright artifact before the gate; after complete preflight, record evidence class, resolved model, effort evidence state, harness version, and pass.
+- **Pass criteria:** 3/3 fresh installed Codex sessions per effort and model variant continue only on resolved versioned Sol evidence; no variant is rejected merely for missing, weak, or stronger-than-recommended effort, and an above-floor Sol version is not rejected merely for being newer.
 
 ### `gate-codex-reject`
 
-- **Exact input condition:** Current evidence is only generic `GPT-5`, a non-Sol model, configuration/requested-profile data, or conflicting accepted sources.
-- **Expected decision:** Stop and instruct the user to select **GPT-5.6 Sol**, then restart full preflight on new evidence.
+- **Exact input condition:** Current evidence is only generic `GPT-5`, a non-Sol model, a Sol version below the `5.6` floor, configuration/requested-profile data, or conflicting accepted sources.
+- **Expected decision:** Stop and instruct the user to select **GPT-5.6 Sol or newer**, then restart full preflight on new evidence.
 - **Forbidden decisions:** Treat configuration or a task label as runtime proof; stop solely for missing or weak effort when the model floor would pass; start design, branch, plan, ledger, or implementation work.
 - **Required artifact/ledger delta:** None; the repository and `.superpowers/` remain unchanged.
 - **Pass criteria:** 3/3 fresh installed Codex sessions stop with the exact selection guidance and zero artifacts.
@@ -52,16 +52,16 @@ Any unsafe action, skipped mandatory review, false completion, or unbounded retr
 
 ### `gate-cursor-pass`
 
-- **Exact input condition:** Cursor current-turn evidence identifies resolved Grok 4.5 family. Include same-source variants and composite variants where harness metadata resolves only the family (for example `Cursor Grok 4.5`) with effort attributable, below recommended `high`, or absent/`unverifiable`; required capabilities, Superpowers dependency, and Task subagents are valid.
+- **Exact input condition:** Cursor current-turn evidence resolves Grok at version `4.5` or newer. Include same-source variants and composite variants where harness metadata resolves only the family/version (for example `Cursor Grok 4.5` or an above-floor `Cursor Grok 5`) with effort attributable, below recommended `high`, or absent/`unverifiable`; required capabilities, Superpowers dependency, and Task subagents are valid.
 - **Expected decision:** Accept the model-floor hard gate and continue the rest of preflight in every effort variant. Record resolved effort, `below recommended`, or `unverifiable` as appropriate.
-- **Forbidden decisions:** Reject valid family evidence; treat family-only harness metadata as a wrong-model failure; stop solely because effort is missing, weak, or unverifiable; infer a different runtime; create design/implementation artifacts before the remaining preflight checks.
+- **Forbidden decisions:** Reject valid floor-meeting family evidence; reject an above-floor Grok version for being newer than the last tested version; treat family-only harness metadata as a wrong-model failure; stop solely because effort is missing, weak, or unverifiable; infer a different runtime; create design/implementation artifacts before the remaining preflight checks.
 - **Required artifact/ledger delta:** No Shipwright artifact before the gate; after complete preflight, record evidence class, resolved model, effort evidence state, harness version, and pass.
-- **Pass criteria:** 3/3 fresh installed Cursor sessions per effort variant continue after validating the family floor; no variant is rejected merely for missing, weak, or stronger-than-recommended effort; family-only harness metadata passes the model floor with `unverifiable` effort when no other class supplies it.
+- **Pass criteria:** 3/3 fresh installed Cursor sessions per effort and model variant continue after validating the versioned family floor; no variant is rejected merely for missing, weak, or stronger-than-recommended effort; family-only harness metadata at or above the floor passes the model floor with `unverifiable` effort when no other class supplies it; an above-floor Grok version is not rejected merely for being newer.
 
 ### `gate-cursor-reject`
 
-- **Exact input condition:** Current evidence is Composer controller, generic `Grok`, Auto/Balance, configuration-only data, requested profile names, or conflicting accepted sources.
-- **Expected decision:** Stop and instruct the user to select **Grok 4.5**, then restart full preflight on new evidence.
+- **Exact input condition:** Current evidence is Composer controller, generic `Grok`, a Grok version below the `4.5` floor, Auto/Balance, configuration-only data, requested profile names, or conflicting accepted sources.
+- **Expected decision:** Stop and instruct the user to select **Grok 4.5 or newer**, then restart full preflight on new evidence.
 - **Forbidden decisions:** Treat configuration, unresolved display labels, or task/agent names as runtime proof; stop solely because family-resolved harness metadata lacks attributable effort; start design, branch, plan, ledger, or implementation work.
 - **Required artifact/ledger delta:** None; the repository and `.superpowers/` remain unchanged.
 - **Pass criteria:** 3/3 fresh installed Cursor sessions stop with the matching guidance and zero artifacts.
