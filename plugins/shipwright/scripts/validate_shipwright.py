@@ -63,7 +63,7 @@ CLAUDE_CHECKED_SETUP = (
     '  shipwright_setup_step="exclude evidence"\n  printf \'%s\\n\' \'.superpowers/\' >> "$fixture_root/.git/info/exclude" || return 1',
     '  shipwright_setup_step="create evidence directories"\n  mkdir -p "$evidence_dir" "$isolated_home" "$isolated_xdg_config" \\\n    "$isolated_xdg_cache" "$isolated_claude_config" "$isolated_tmp" || return 1',
     '  shipwright_setup_step="write commit seed"\n  printf \'shipwright_commit=%s\\n\' "$shipwright_commit" > "$environment_seed" || return 1',
-    '  shipwright_setup_step="write status seed"\n  printf \'shipwright_status=%s\\n\' "$shipwright_status" >> "$environment_seed" || return 1',
+    '  shipwright_setup_step="write status seed"\n  {\n    printf \'shipwright_status<<END_SHIPWRIGHT_STATUS\\n\'\n    printf \'%s\\n\' "$shipwright_status"\n    printf \'END_SHIPWRIGHT_STATUS\\n\'\n  } >> "$environment_seed" || return 1',
     '  shipwright_setup_step="write plugin seed"\n  printf \'shipwright_plugin_source=%s\\n\' "$shipwright_checkout/plugins/shipwright" >> "$environment_seed" || return 1',
     '  shipwright_setup_step="write evidence seed"\n  printf \'evidence_dir=%s\\n\' "$evidence_dir" >> "$environment_seed" || return 1',
     '  shipwright_setup_step="verify evidence exclusion"\n  git -C "$fixture_root" check-ignore -q "$evidence_dir" || return 1',
@@ -151,7 +151,7 @@ CURSOR_CHECKED_SETUP = (
     '  shipwright_setup_step="create evidence directories"\n  mkdir -p "$evidence_dir" || return 1',
     '  shipwright_setup_step="stage fixture-local Cursor plugin path"\n  cursor_plugins_local="$fixture_root/.cursor/plugins/local"\n  mkdir -p "$cursor_plugins_local" || return 1\n  ln -sfn "$shipwright_checkout/plugins/shipwright" "$cursor_plugins_local/shipwright" || return 1',
     '  shipwright_setup_step="write commit seed"\n  printf \'shipwright_commit=%s\\n\' "$shipwright_commit" > "$environment_seed" || return 1',
-    '  shipwright_setup_step="write status seed"\n  printf \'shipwright_status=%s\\n\' "$shipwright_status" >> "$environment_seed" || return 1',
+    '  shipwright_setup_step="write status seed"\n  {\n    printf \'shipwright_status<<END_SHIPWRIGHT_STATUS\\n\'\n    printf \'%s\\n\' "$shipwright_status"\n    printf \'END_SHIPWRIGHT_STATUS\\n\'\n  } >> "$environment_seed" || return 1',
     '  shipwright_setup_step="write plugin seed"\n  printf \'shipwright_plugin_source=%s\\n\' "$shipwright_checkout/plugins/shipwright" >> "$environment_seed" || return 1',
     '  shipwright_setup_step="write cursor plugins seed"\n  printf \'cursor_plugins_local=%s\\n\' "$cursor_plugins_local" >> "$environment_seed" || return 1',
     '  shipwright_setup_step="write evidence seed"\n  printf \'evidence_dir=%s\\n\' "$evidence_dir" >> "$environment_seed" || return 1',
@@ -1105,8 +1105,12 @@ def _validate_claude_runbook(
             "Claude runbook seeded commit transfer",
         ),
         (
-            "printf 'shipwright_status=%s\\n' \"$shipwright_status\" >> \"$environment_seed\"",
-            "Claude runbook seeded status transfer",
+            "shipwright_status<<END_SHIPWRIGHT_STATUS",
+            "Claude runbook seeded status fence open",
+        ),
+        (
+            "END_SHIPWRIGHT_STATUS",
+            "Claude runbook seeded status fence close",
         ),
         (
             "printf 'shipwright_plugin_source=%s\\n' \"$shipwright_checkout/plugins/shipwright\" >> \"$environment_seed\"",
@@ -1271,8 +1275,12 @@ def _validate_cursor_runbook(
             "Cursor runbook seeded commit transfer",
         ),
         (
-            "printf 'shipwright_status=%s\\n' \"$shipwright_status\" >> \"$environment_seed\"",
-            "Cursor runbook seeded status transfer",
+            "shipwright_status<<END_SHIPWRIGHT_STATUS",
+            "Cursor runbook seeded status fence open",
+        ),
+        (
+            "END_SHIPWRIGHT_STATUS",
+            "Cursor runbook seeded status fence close",
         ),
         (
             "printf 'shipwright_plugin_source=%s\\n' \"$shipwright_checkout/plugins/shipwright\" >> \"$environment_seed\"",
