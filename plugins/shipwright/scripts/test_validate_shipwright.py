@@ -744,15 +744,15 @@ class ShipwrightValidatorTests(unittest.TestCase):
         self.replace(cursor, "Compose dimensions", "Merge evidence")
         self.replace(
             cursor,
-            "only effort evidence is missing",
-            "controller evidence is incomplete",
+            "Never stop solely because controller effort is missing, weak, or unverifiable",
+            "Stop when controller effort is missing",
         )
         errors = validate_bundle(self.repo_root)
         for fragment in (
             "Cursor controller family display evidence",
             "Cursor harness family-only evidence",
             "Cursor composite family/effort evidence",
-            "Cursor incomplete-effort guidance",
+            "Cursor controller effort never hard-stops",
         ):
             self.assertTrue(any(fragment in error for error in errors), errors)
 
