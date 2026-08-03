@@ -831,6 +831,14 @@ def _validate_skill_and_contracts(
                 "controller gate before trivial reduction",
             ),
             (
+                "and the verification surface it can affect is narrow",
+                "§3 verification-surface reduction criterion",
+            ),
+            (
+                "§11 fresh verification, or §12 QA routing",
+                "§3 reduction never waives verification or QA",
+            ),
+            (
                 "Recommended controller effort is not a precondition",
                 "shared controller effort disclosure rule",
             ),
