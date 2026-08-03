@@ -793,6 +793,25 @@ class ShipwrightValidatorTests(unittest.TestCase):
         ):
             self.assertTrue(any(fragment in error for error in errors), errors)
 
+    def test_reports_missing_gate_before_reduction_contracts(self) -> None:
+        skill = "plugins/shipwright/skills/shipwright/SKILL.md"
+        self.replace(
+            skill,
+            "including before any §3 reduction",
+            "after design artifacts if needed",
+        )
+        self.replace(
+            skill,
+            "unreadable platform reference is a stop condition",
+            "unreadable platform reference may be ignored",
+        )
+        errors = validate_bundle(self.repo_root)
+        for fragment in (
+            "controller gate before trivial reduction",
+            "unreadable platform reference stop",
+        ):
+            self.assertTrue(any(fragment in error for error in errors), errors)
+
     def test_reports_missing_post_plan_handoff_override(self) -> None:
         skill = "plugins/shipwright/skills/shipwright/SKILL.md"
         self.replace(

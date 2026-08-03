@@ -99,12 +99,12 @@ marker strings survive. Optional hardening: assert the floor language, or
 assert that no `claude-opus-<n>-<n>` literal appears as an acceptance
 condition.
 
-### S8 — Documented validation commands dirty the working tree — OPEN, LOW
+### S8 — Documented validation commands dirty the working tree — FIXED
 
 `python3 -m unittest plugins/shipwright/scripts/test_validate_shipwright.py`
-creates `plugins/shipwright/scripts/__pycache__/`, which is not ignored, so the
-repo's own documented validation step leaves the tree dirty. This also feeds
-S4, since the eval seed then records a dirty status. Add `__pycache__/` to
+creates `plugins/shipwright/scripts/__pycache__/`, which was not ignored, so the
+repo's own documented validation step left the tree dirty. This also fed S4,
+since the eval seed then recorded a dirty status. Added `__pycache__/` to
 `.gitignore`.
 
 ### S9 — Full runbook not executed — BLOCKED
@@ -193,11 +193,14 @@ is documented but Task-spawned agents do not propagate or expose attributable
 child effort ([subagents docs](https://code.claude.com/docs/en/subagents),
 [anthropics/claude-code#43083](https://github.com/anthropics/claude-code/issues/43083)).
 
-Decision: when the live schema has a model selector but no effort selector,
-accept attributable model-family evidence with absent effort for every route,
-including Sonnet and Opus; do not fallback solely because effort is absent;
-restore effort floors if a later probe finds a usable effort selector or
-attributable child effort. Controller Opus / xhigh+ effort floor remains.
+Decision: accept attributable model-family evidence without effort only when
+the selected route has no effort floor, or when this platform reference
+explicitly waives the effort dimension because the live schema has no effort
+selector and child effort is not attributable. Under that waiver, Ordinary /
+Integration / Critical child routes may accept absent effort; do not fallback
+solely because effort is absent. Preserve the controller Opus / xhigh+ effort
+floor. Restore route effort floors when a later probe finds a usable effort
+selector or attributable child effort.
 
 Changed: `references/claude-code.md` worker routing, native-dispatch, and child
 evidence; `SKILL.md` §7 waiver; `evals/v1/scenarios.md` `explicit-routing`;

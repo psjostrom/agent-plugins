@@ -921,8 +921,12 @@ def _validate_skill_and_contracts(
             ("Opus 4.6 / xhigh or stronger", "Claude controller gate guidance"),
             ("unresolved word `opus`", "Claude controller evidence rejection"),
             (
-                "Accept absent effort for every route in this schema shape",
+                "Accept attributable model-family evidence without effort only when",
                 "Claude model-only absent effort acceptance",
+            ),
+            (
+                "The controller gate's Opus / xhigh+ effort floor is unchanged",
+                "Claude controller effort floor not waived",
             ),
             (
                 "Do not enter the inherited-controller fallback solely because effort is absent",
