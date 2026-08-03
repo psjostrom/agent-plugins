@@ -24,17 +24,25 @@ on every model release, and the failure mode is a hard stop rather than a
 warning.
 
 Replaced with a numeric version floor: resolved Opus family at version `4.6` or
-newer, effort rank `xhigh` or stronger, with a higher major version meeting the
-floor regardless of minor version. Context-size suffixes such as `[1m]` are
-explicitly capability-neutral. Rejection still covers non-Opus families, Opus
-below the floor, and unresolved evidence including the bare word `opus`.
+newer, with a higher major version meeting the floor regardless of minor
+version. Context-size suffixes such as `[1m]` are explicitly capability-neutral.
+Rejection still covers non-Opus families, Opus below the floor, and unresolved
+evidence including the bare word `opus`. Controller effort was initially kept as
+a hard `xhigh+` floor; that was later demoted — see S14.
 
 Changed: `skills/shipwright/references/claude-code.md`,
 `evals/v1/claude-code-runbook.md`, `evals/v1/scenarios.md`
 (`gate-claude-pass`, `gate-claude-reject`), and the corresponding
 `scripts/validate_shipwright.py` markers plus
-`scripts/test_validate_shipwright.py` fixtures. Validator and its 57 unit tests
-pass. Still static-only; no behavioral gate pass observed yet.
+`scripts/test_validate_shipwright.py` fixtures. Validator and its unit tests
+pass (58 at `91dc04f` and after S14).
+
+**Behaviorally confirmed on the model dimension at `91dc04f`.** A headless run
+with the platform reference readable reported: model `claude-opus-5` from harness
+turn metadata, "concrete versioned Opus ID; major `5` > `4`, clears the `4.6`
+floor" — **Pass**. Before the fix this same session was rejected outright. The
+effort dimension could not be confirmed unattended and is no longer a hard gate
+(S14).
 
 ### S2 — The same brittleness remains on Codex and Cursor — OPEN
 
@@ -198,13 +206,46 @@ the selected route has no effort floor, or when this platform reference
 explicitly waives the effort dimension because the live schema has no effort
 selector and child effort is not attributable. Under that waiver, Ordinary /
 Integration / Critical child routes may accept absent effort; do not fallback
-solely because effort is absent. Preserve the controller Opus / xhigh+ effort
-floor. Restore route effort floors when a later probe finds a usable effort
-selector or attributable child effort.
+solely because effort is absent. Restore route effort floors when a later probe
+finds a usable effort selector or attributable child effort. Controller
+recommended effort is a separate shared disclosure rule (S14), not preserved as
+a child-style hard floor.
 
 Changed: `references/claude-code.md` worker routing, native-dispatch, and child
 evidence; `SKILL.md` §7 waiver; `evals/v1/scenarios.md` `explicit-routing`;
 validator markers. Inherited-controller fallback is not the normal path.
+
+### S14 — Controller effort conflated verifiable and unverifiable checks — FIXED
+
+Observed behaviorally at `91dc04f`. A headless Claude Code run with the platform
+reference readable reached the controller gate and stopped: model passed from
+harness metadata (`claude-opus-5`), effort came back Unverified, and
+`--effort xhigh` was correctly rejected as a launch argument. Cursor has the same
+controller observability hole (family/model readable; effort often not). Codex
+may emit effort in metadata, but keeping a hard effort precondition only where
+observable would make the product mean different things per harness.
+
+Decision (shared across Claude Code, Cursor, and Codex):
+
+- **Model/family floor** remains a hard gate.
+- **Recommended controller effort** is a disclosed assumption, not a
+  precondition. Record resolved effort, `below recommended`, or `unverifiable`;
+  never stop solely because effort is missing, weak, or unverifiable. Disclose
+  that state in the completion report and any authorized PR body, not only the
+  ledger.
+- **Child waiver vs controller disclosure are different mechanisms.** Child
+  effort is unrequestable on Claude Code (no Agent effort selector) — waiving
+  proof of an unsettable dimension is coherent. Controller effort is settable
+  but often unobservable — record and disclose rather than hard-stop or pretend
+  to verify.
+- Necessity of the recommended ranks (`xhigh` / `high`) remains unmeasured;
+  they stay as recommendations pending a medium-vs-xhigh comparison. Dropping
+  them entirely is still available if measurement shows no material gap.
+
+Changed: `SKILL.md` §1 and §15; `references/claude-code.md`, `cursor.md`,
+`codex.md` controller gates; `evals/v1/scenarios.md` gate cases and
+`explicit-routing`; Claude/Cursor runbooks; validator markers and unit tests.
+`validate_shipwright.py` passes; 58 unit tests OK.
 
 ### S12 — Reduced runs still scaffold unrequested project files — OPEN, LOW
 
