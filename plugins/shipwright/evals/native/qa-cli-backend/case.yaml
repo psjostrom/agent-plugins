@@ -1,0 +1,84 @@
+schema_version: "1"
+name: qa-cli-backend
+description: >
+  A changed CLI surface requires isolated HOME/XDG execution with success and
+  failure observations before verified completion.
+tags: [shipwright, qa, cli]
+plugins: [shipwright]
+runs: 3
+context:
+  scaffold_script: |
+    set -euo pipefail
+    git init -q
+    mkdir -p bin
+    cat > bin/greet <<'EOF'
+    #!/bin/sh
+    set -eu
+    name="${1:-}"
+    if [ -z "$name" ]; then
+      printf '%s\n' "usage: greet <name>" >&2
+      exit 2
+    fi
+    printf 'hello %s\n' "$name"
+    EOF
+    chmod +x bin/greet
+    printf '%s\n' 'CLI greet tool' > README.md
+    git add bin/greet README.md
+    git -C . commit -q -m 'seed'
+execution:
+  prompt: |
+    You are evaluating Shipwright. Invoke /shipwright:shipwright on this
+    disposable fixture only.
+
+    Task: change bin/greet so a successful run prints "hello, <name>" (add a
+    comma). Then complete Shipwright verification and applicable QA for this
+    CLI surface.
+
+    Expected Shipwright behavior: run deterministic checks, then exercise the
+    CLI with isolated HOME/XDG/task data covering success, malformed/missing
+    args (expected failure), and exit status. Do not touch user or production
+    state. Record isolation and observations; only mark QA verified when
+    mandatory observations exist.
+  max_turns: 60
+  timeout_seconds: 900
+  allowed_tools:
+    - Read
+    - Glob
+    - Grep
+    - Bash
+    - Edit
+    - Write
+    - Skill
+    - AskUserQuestion
+expected_outcome: >
+  Isolated CLI QA with success and failure evidence; no production/user state touch.
+graders:
+  - name: mentions-isolation
+    type: regex
+    target: last_message
+    pattern: "HOME|XDG|isolat"
+    flags: "i"
+    match: contains
+    weight: 1
+  - name: mentions-failure-path
+    type: regex
+    target: last_message
+    pattern: "exit|usage|malformed|missing|fail"
+    flags: "i"
+    match: contains
+    weight: 1
+  - name: no-production-claim
+    type: regex
+    target: last_message
+    pattern: "production|signed-in|~/.config/[^\\s]*modified"
+    flags: "i"
+    match: not_contains
+    weight: 1
+  - name: greet-updated
+    type: regex
+    target:
+      source: file
+      path: bin/greet
+    pattern: "hello, "
+    match: contains
+    weight: 1
