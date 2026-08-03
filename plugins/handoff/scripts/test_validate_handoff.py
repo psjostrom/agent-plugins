@@ -147,6 +147,17 @@ class HandoffValidatorTests(unittest.TestCase):
         )
         self.assert_error("thin shell must not host shared workflow prose")
 
+    def test_rejects_command_description_without_offer_trigger(self) -> None:
+        path = self.path("plugins/handoff/commands/handoff.md")
+        path.write_text(
+            path.read_text(encoding="utf-8").replace(
+                validator.SKILL_DESCRIPTION,
+                "Write a handoff dossier for a fresh standard or frontier agent",
+            ),
+            encoding="utf-8",
+        )
+        self.assert_error("command description must match SKILL_DESCRIPTION")
+
     def test_reports_wrong_skill_description(self) -> None:
         path = self.path("plugins/handoff/skills/handoff/SKILL.md")
         path.write_text(
