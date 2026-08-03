@@ -1087,6 +1087,36 @@ def _validate_skill_and_contracts(
         CLAUDE_REFERENCE,
         errors,
     )
+    _forbid_markers(
+        codex_text,
+        (
+            (
+                "Accept only exact",
+                "Codex exact-version acceptance pin",
+            ),
+            (
+                "until this reference explicitly allowlists",
+                "Codex future-model allowlist brittleness",
+            ),
+        ),
+        CODEX_REFERENCE,
+        errors,
+    )
+    _forbid_markers(
+        cursor_text,
+        (
+            (
+                "Accept only exact",
+                "Cursor exact-version acceptance pin",
+            ),
+            (
+                "until this reference explicitly allowlists",
+                "Cursor future-model allowlist brittleness",
+            ),
+        ),
+        CURSOR_REFERENCE,
+        errors,
+    )
     _require_markers(
         cursor_text,
         (
@@ -1482,7 +1512,11 @@ def _validate_codex_runbook(
             "Codex runbook capability floor",
         ),
         ("Superpowers 6.1.1 or newer", "Codex runbook dependency floor"),
-        ("gpt-5.6-sol", "Codex runbook exact model evidence"),
+        ("gpt-5.6-sol", "Codex runbook minimum Sol model evidence"),
+        (
+            "gpt-5.6-sol or newer",
+            "Codex runbook Sol floor language",
+        ),
         ("high or stronger", "Codex runbook effort evidence"),
         ("one broad smoke pass", "Codex runbook smoke threshold"),
         ("3/3 exact passes", "Codex runbook hard-gate threshold"),

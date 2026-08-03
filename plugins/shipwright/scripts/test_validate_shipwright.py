@@ -274,16 +274,52 @@ class ShipwrightValidatorTests(unittest.TestCase):
             "## Result rubric",
             "## Return template",
             "Codex CLI 0.139.0 or newer",
+            "plugin discovery, Agent Skills, multi-agent dispatch, and current-turn metadata",
             "Superpowers 6.1.1 or newer",
             "gpt-5.6-sol",
-            "$shipwright:shipwright",
+            "gpt-5.6-sol or newer",
+            "high or stronger",
             "one broad smoke pass",
             "3/3 exact passes",
-            "shipwright_prepare_codex_evaluation() {",
+            "at least 2/3 intended",
+            "3/3 safe choices",
+            "PASS",
+            "FAIL",
+            "UNVERIFIED",
+            "disposable fixture repository",
+            "credentials",
+            "paid external services",
+            "must not modify Shipwright",
+            'shipwright_checkout="$(pwd -P)"',
+            'shipwright_status="<clean>"',
+            'fixture_root="$(mktemp -d)"',
+            'git -C "$fixture_root" init',
+            "evaluation-input/codex-runbook.md",
+            "evaluation-input/scenarios.md",
+            'environment_seed="$fixture_root/evaluation-input/environment-seed.md"',
+            "printf 'shipwright_commit=%s\\n' \"$shipwright_commit\" > \"$environment_seed\"",
             "shipwright_status<<END_SHIPWRIGHT_STATUS",
             "END_SHIPWRIGHT_STATUS",
+            "printf 'shipwright_plugin_source=%s\\n' \"$shipwright_checkout/plugins/shipwright\" >> \"$environment_seed\"",
+            "printf 'codex_version=%s\\n' \"$codex_version\" >> \"$environment_seed\"",
+            "printf 'evidence_dir=%s\\n' \"$evidence_dir\" >> \"$environment_seed\"",
+            "Read evaluation-input/environment-seed.md along with",
             "Failure to create or read environment-seed.md makes the evaluation `UNVERIFIED`.",
+            "shipwright_prepare_codex_evaluation() {",
+            "SUPERPOWERS_PLUGIN_DIR",
+            "Load Shipwright only from the recorded shipwright_plugin_source via a disposable Codex marketplace install",
+            "If Codex is below 0.139.0, lacks plugin discovery, Agent Skills, multi-agent dispatch, or current-turn metadata, stop and mark the evaluation `UNVERIFIED`.",
+            "If Superpowers is below 6.1.1, stop and mark the evaluation `UNVERIFIED`.",
+            "Stop and report UNVERIFIED if Codex is below 0.139.0",
+            "Accept compatible newer Codex and Superpowers versions.",
+            "below-minimum Codex or Superpowers version is active",
+            ".git/info/exclude",
+            'git -C "$fixture_root" check-ignore -q "$evidence_dir"',
+            'evidence_dir="$fixture_root/.superpowers/sdd/evals/$run_id"',
+            "Failure of copy/setup, ignore verification, disposable plugin loading, or fixture-rooted workspace entry",
+            "$shipwright:shipwright",
         )
+        required_markers += validator.CODEX_CHECKED_SETUP
         for index, marker in enumerate(required_markers):
             with self.subTest(marker=marker):
                 replacement = f"__missing_codex_contract_{index}__"
@@ -298,6 +334,35 @@ class ShipwrightValidatorTests(unittest.TestCase):
                 self.replace(runbook_path, f"`{case}`", f"`removed-{case}`")
                 self.assert_error(f"missing delegated Codex case {case}")
                 self.replace(runbook_path, f"`removed-{case}`", f"`{case}`")
+
+    def test_requires_each_codex_fixture_setup_operation_to_be_checked_and_tracked(
+        self,
+    ) -> None:
+        runbook_path = "plugins/shipwright/evals/v1/codex-runbook.md"
+        original = self.path(runbook_path).read_text(encoding="utf-8")
+        for marker in validator.CODEX_CHECKED_SETUP:
+            with self.subTest(step=marker.splitlines()[0]):
+                self.assertIn(marker, original)
+                unguarded = marker.replace(" || return 1", "")
+                self.path(runbook_path).write_text(
+                    original.replace(marker, unguarded, 1), encoding="utf-8"
+                )
+                self.assert_error("checked setup")
+        self.path(runbook_path).write_text(original, encoding="utf-8")
+
+    def test_rejects_codex_runbook_interactive_shell_exit(self) -> None:
+        runbook_path = "plugins/shipwright/evals/v1/codex-runbook.md"
+        original = self.path(runbook_path).read_text(encoding="utf-8")
+        self.path(runbook_path).write_text(
+            original.replace(
+                '  printf \'%s\\n\' "Shipwright Codex setup failed',
+                '  exit 1\n  printf \'%s\\n\' "Shipwright Codex setup failed',
+                1,
+            ),
+            encoding="utf-8",
+        )
+        self.assert_error("interactive-shell safety")
+        self.path(runbook_path).write_text(original, encoding="utf-8")
 
     def test_requires_disable_model_invocation_frontmatter(self) -> None:
         skill = "plugins/shipwright/skills/shipwright/SKILL.md"

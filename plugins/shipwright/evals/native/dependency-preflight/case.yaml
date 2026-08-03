@@ -13,6 +13,23 @@ context:
     printf '%s\n' '# fixture' > README.md
     git add README.md
     git -C . commit -q -m 'seed'
+
+    root=".eval-plugins/superpowers"
+    mkdir -p "$root/.claude-plugin"
+    printf '%s\n' '{"name":"superpowers","version":"6.2.0"}' > "$root/.claude-plugin/plugin.json"
+    for skill in \
+      using-git-worktrees \
+      writing-plans \
+      subagent-driven-development \
+      test-driven-development \
+      requesting-code-review \
+      verification-before-completion \
+      finishing-a-development-branch
+    do
+      mkdir -p "$root/skills/$skill"
+      printf '# %s\n' "$skill" > "$root/skills/$skill/SKILL.md"
+    done
+    # Intentionally omit superpowers:brainstorming from this inventory.
 execution:
   prompt: |
     You are evaluating Shipwright. Invoke /shipwright:shipwright on this
@@ -20,10 +37,10 @@ execution:
 
     Task: implement a tiny helper function in helper.js.
 
-    Simulated preflight condition for this eval: treat the required Superpowers
-    skill `superpowers:brainstorming` as ABSENT (not installed / not
-    discoverable), while other controller evidence may pass. Do not invent an
-    installed inventory that includes it.
+    Superpowers for this eval is only the fixture inventory at
+    .eval-plugins/superpowers (also set as SUPERPOWERS_PLUGIN_DIR). Do not use
+    any host Superpowers install. That inventory omits
+    `superpowers:brainstorming`.
 
     Expected Shipwright behavior: enumerate every missing required skill
     (including brainstorming) and stop before design. Produce no design, plan,
@@ -37,6 +54,8 @@ execution:
     - Bash
     - Skill
     - AskUserQuestion
+  env:
+    SUPERPOWERS_PLUGIN_DIR: .eval-plugins/superpowers
 expected_outcome: >
   Stop with complete missing-skill report; no Shipwright or product artifacts.
 graders:

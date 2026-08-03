@@ -10,7 +10,7 @@ context:
   scaffold_script: |
     set -euo pipefail
     git init -q
-    mkdir -p bin
+    mkdir -p bin .eval-qa
     cat > bin/greet <<'EOF'
     #!/bin/sh
     set -eu
@@ -39,6 +39,13 @@ execution:
     args (expected failure), and exit status. Do not touch user or production
     state. Record isolation and observations; only mark QA verified when
     mandatory observations exist.
+
+    Write captured command evidence to `.eval-qa/cli-results.txt` with at least:
+    - a SUCCESS block containing the exact stdout of a successful run and
+      `exit_code=0`
+    - a FAILURE block containing stderr or usage text from a missing-arg run
+      and `exit_code=2`
+    - an ISOLATION block naming the HOME/XDG paths used for those runs
   max_turns: 60
   timeout_seconds: 900
   allowed_tools:
@@ -53,17 +60,29 @@ execution:
 expected_outcome: >
   Isolated CLI QA with success and failure evidence; no production/user state touch.
 graders:
-  - name: mentions-isolation
+  - name: success-run-evidence
     type: regex
-    target: last_message
-    pattern: "HOME|XDG|isolat"
+    target:
+      source: file
+      path: .eval-qa/cli-results.txt
+    pattern: "hello, .+[\\s\\S]*exit_code=0"
     flags: "i"
     match: contains
-    weight: 1
-  - name: mentions-failure-path
+    weight: 2
+  - name: failure-run-evidence
     type: regex
-    target: last_message
-    pattern: "exit|usage|malformed|missing|fail"
+    target:
+      source: file
+      path: .eval-qa/cli-results.txt
+    pattern: "exit_code=2"
+    match: contains
+    weight: 2
+  - name: isolation-evidence
+    type: regex
+    target:
+      source: file
+      path: .eval-qa/cli-results.txt
+    pattern: "HOME|XDG"
     flags: "i"
     match: contains
     weight: 1

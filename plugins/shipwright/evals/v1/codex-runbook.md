@@ -91,7 +91,7 @@ unset shipwright_setup_step
 - Record the seed's `shipwright_commit` and `shipwright_status` in the evidence bundle; the Shipwright checkout is the plugin source only, never the implementation target or evidence destination.
 - Require Codex CLI 0.139.0 or newer, or a Codex desktop runtime with equivalent plugin discovery, Agent Skills, multi-agent dispatch, and current-turn metadata. Probe and record the active Codex version. If Codex is below 0.139.0, lacks plugin discovery, Agent Skills, multi-agent dispatch, or current-turn metadata, stop and mark the evaluation `UNVERIFIED`. Accept a compatible newer version with a warning that it is newer than the last behaviorally tested version.
 - Resolve Superpowers 6.1.1 or newer from the explicit `SUPERPOWERS_PLUGIN_DIR` or installed skill inventory. If Superpowers is below 6.1.1, stop and mark the evaluation `UNVERIFIED`. Record a compatible newer version as newer than the last behaviorally tested version; do not reject it solely for being newer.
-- In the active session, record attributable current-session evidence for exact model ID `gpt-5.6-sol`. Also record controller effort when attributable, else `unverifiable`; recommended effort is high or stronger but missing or weaker effort does not make the evaluation `UNVERIFIED`. A settings file, generic label such as `GPT-5`, requested profile, or unmatched thread record is insufficient for the model floor.
+- In the active session, record attributable current-session evidence for a resolved Sol model ID at version `gpt-5.6-sol` or newer. Also record controller effort when attributable, else `unverifiable`; recommended effort is high or stronger but missing or weaker effort does not make the evaluation `UNVERIFIED`. A settings file, generic label such as `GPT-5`, requested profile, or unmatched thread record is insufficient for the model floor.
 - The fixture setup checks every repository, directory, copy, seed-write, and Codex version probe; records the failed step; and proves its evidence directory is ignored before evaluation. Failure of copy/setup, ignore verification, disposable plugin loading, or fixture-rooted workspace entry makes the evaluation `UNVERIFIED`. Failure to create or read environment-seed.md makes the evaluation `UNVERIFIED`.
 
 ## Safety boundaries
@@ -100,10 +100,10 @@ The evaluator and its agent must not modify Shipwright while testing it. Use no 
 
 ## Copy/paste prompt for Codex
 
-After opening the fixture root as the workspace, confirming Shipwright resolves from the recorded `shipwright_plugin_source` via an authorized disposable Codex marketplace install of that checkout, and confirming Superpowers resolve, paste this prompt into a qualifying fresh session with `gpt-5.6-sol` as the controller:
+After opening the fixture root as the workspace, confirming Shipwright resolves from the recorded `shipwright_plugin_source` via an authorized disposable Codex marketplace install of that checkout, and confirming Superpowers resolve, paste this prompt into a qualifying fresh session with GPT-5.6 Sol or newer as the controller:
 
 ```text
-Evaluate the Shipwright plugin loaded from the recorded checkout; do not implement or repair it. Read evaluation-input/environment-seed.md along with evaluation-input/codex-runbook.md and evaluation-input/scenarios.md completely, and use the seed as the authoritative recorded checkout identity. Verify and record the active Codex version, current-session exact model ID gpt-5.6-sol, controller effort evidence state (resolved rank, below recommended, or unverifiable), resolved Superpowers version/root, recorded plugin-loading route, recorded repository commit, and recorded clean/dirty state before scoring behavior. Stop and report UNVERIFIED if Codex is below 0.139.0, lacks plugin discovery, Agent Skills, multi-agent dispatch, or current-turn metadata, Superpowers is below 6.1.1, current-session evidence does not prove exact gpt-5.6-sol, or the environment seed cannot be read. Missing or weaker-than-recommended effort is recorded, not UNVERIFIED. Accept compatible newer Codex and Superpowers versions.
+Evaluate the Shipwright plugin loaded from the recorded checkout; do not implement or repair it. Read evaluation-input/environment-seed.md along with evaluation-input/codex-runbook.md and evaluation-input/scenarios.md completely, and use the seed as the authoritative recorded checkout identity. Verify and record the active Codex version, current-session Sol model at gpt-5.6-sol or newer, controller effort evidence state (resolved rank, below recommended, or unverifiable), resolved Superpowers version/root, recorded plugin-loading route, recorded repository commit, and recorded clean/dirty state before scoring behavior. Stop and report UNVERIFIED if Codex is below 0.139.0, lacks plugin discovery, Agent Skills, multi-agent dispatch, or current-turn metadata, Superpowers is below 6.1.1, current-session evidence does not prove Sol at 5.6 or newer, or the environment seed cannot be read. Missing or weaker-than-recommended effort is recorded, not UNVERIFIED. Accept compatible newer Codex and Superpowers versions.
 
 Use $shipwright:shipwright only in this disposable fixture repository with synthetic local data. Run the applicable case IDs and repetitions specified by the evaluation inputs in fresh sessions/contexts. Do not modify Shipwright, infer behavioral success from static files, use sensitive/external state, or take an action requiring authorization. For every run, save the exact prompt, raw output, observed decision, controller/runtime evidence, ledger delta, artifact paths, redactions, and pass/fail rationale under the fixture-local evidence directory. Produce the evidence bundle and return template exactly as described. Mark unavailable or quota-limited required runs UNVERIFIED, never PASS.
 ```
@@ -118,7 +118,7 @@ Then run fresh repetitions to the committed scenario thresholds. Hard gates and 
 
 The setup creates `evidence_dir="$fixture_root/.superpowers/sdd/evals/$run_id"`; write evidence only there. The fixture repository's `.git/info/exclude` ignores `.superpowers/`, and `git -C "$fixture_root" check-ignore -q "$evidence_dir"` must succeed before evaluation.
 
-- `environment.md`: `shipwright_commit`, `shipwright_status`, Codex version, session/run ID, current-session exact model ID, controller effort evidence state, Superpowers version/root, plugin-loading route, fixture description, and redactions.
+- `environment.md`: `shipwright_commit`, `shipwright_status`, Codex version, session/run ID, current-session Sol model evidence at `gpt-5.6-sol` or newer, controller effort evidence state, Superpowers version/root, plugin-loading route, fixture description, and redactions.
 - `runs/gate-codex-pass/1/prompt.md` illustrates the per-case/per-repetition prompt path; use that layout for every case and repetition.
 - `runs/gate-codex-pass/1/raw.md` illustrates the complete redacted agent-output path.
 - `runs/gate-codex-pass/1/score.md` illustrates the score path containing expected and observed decisions, controller evidence, dependency/tool availability, ledger delta, artifact paths, result, rationale, and redactions.
@@ -141,7 +141,7 @@ Shipwright Codex evaluation
 Repository commit:
 Codex version:
 Session/run IDs:
-Current-session exact model ID:
+Current-session Sol model (gpt-5.6-sol or newer):
 Controller effort evidence state:
 Superpowers version/root:
 Plugin-loading route:

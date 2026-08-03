@@ -13,6 +13,23 @@ context:
     printf '%s\n' '# fixture' > README.md
     git add README.md
     git -C . commit -q -m 'seed'
+
+    root=".eval-plugins/superpowers"
+    mkdir -p "$root/.claude-plugin"
+    printf '%s\n' '{"name":"superpowers","version":"6.0.0"}' > "$root/.claude-plugin/plugin.json"
+    for skill in \
+      brainstorming \
+      using-git-worktrees \
+      writing-plans \
+      subagent-driven-development \
+      test-driven-development \
+      requesting-code-review \
+      verification-before-completion \
+      finishing-a-development-branch
+    do
+      mkdir -p "$root/skills/$skill"
+      printf '# %s\n' "$skill" > "$root/skills/$skill/SKILL.md"
+    done
 execution:
   prompt: |
     You are evaluating Shipwright. Invoke /shipwright:shipwright on this
@@ -20,9 +37,10 @@ execution:
 
     Task: add a one-line comment to README.md.
 
-    Simulated preflight condition for this eval: Superpowers skill names are
-    present, but version evidence is BELOW 6.1.1 (treat resolved version as
-    6.0.0 from a single root). Do not invent a passing 6.1.1+ inventory.
+    Superpowers for this eval is only the fixture inventory at
+    .eval-plugins/superpowers (also set as SUPERPOWERS_PLUGIN_DIR). Do not use
+    any host Superpowers install. That single package root reports version
+    6.0.0 (below the 6.1.1 floor) with all required skill names present.
 
     Expected Shipwright behavior: stop and report the below-minimum dependency
     with exact problem evidence. Produce no design, plan, ledger, or
@@ -36,6 +54,8 @@ execution:
     - Bash
     - Skill
     - AskUserQuestion
+  env:
+    SUPERPOWERS_PLUGIN_DIR: .eval-plugins/superpowers
 expected_outcome: >
   Stop on below-minimum Superpowers; zero Shipwright artifacts.
 graders:
