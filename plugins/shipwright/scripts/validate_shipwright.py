@@ -933,7 +933,11 @@ def _validate_skill_and_contracts(
     _require_markers(
         codex_text,
         (
-            ("gpt-5.6-sol", "Codex controller gate exact model"),
+            ("gpt-5.6-sol", "Codex controller gate minimum model version"),
+            (
+                "Require a resolved Sol model at version `5.6` or newer",
+                "Codex controller gate numeric floor",
+            ),
             (
                 "Recommended controller effort rank is `high` or stronger",
                 "Codex recommended controller effort",
@@ -942,8 +946,11 @@ def _validate_skill_and_contracts(
                 "Recommended controller effort is not a precondition",
                 "Codex controller effort not a precondition",
             ),
-            ("select **GPT-5.6 Sol**", "Codex controller gate guidance"),
-            ("generic family label", "Codex controller evidence rejection"),
+            ("select **GPT-5.6 Sol or newer**", "Codex controller gate guidance"),
+            (
+                "generic labels such as `GPT-5`",
+                "Codex controller evidence rejection",
+            ),
             (
                 "Never stop solely because controller effort is missing, weak, or unverifiable",
                 "Codex controller effort never hard-stops",
@@ -1005,7 +1012,11 @@ def _validate_skill_and_contracts(
     _require_markers(
         cursor_text,
         (
-            ("Grok 4.5", "Cursor controller gate Grok 4.5 family"),
+            ("Grok 4.5", "Cursor controller gate Grok 4.5 floor"),
+            (
+                "Require a resolved Grok model at version `4.5` or newer",
+                "Cursor controller gate numeric floor",
+            ),
             (
                 "Recommended controller effort rank is `high` or stronger",
                 "Cursor recommended controller effort",
@@ -1014,7 +1025,7 @@ def _validate_skill_and_contracts(
                 "Recommended controller effort is not a precondition",
                 "Cursor controller effort not a precondition",
             ),
-            ("select **Grok 4.5**", "Cursor controller gate guidance"),
+            ("select **Grok 4.5 or newer**", "Cursor controller gate guidance"),
             ("Cursor Grok 4.5", "Cursor controller family display evidence"),
             ("family dimension only", "Cursor harness family-only evidence"),
             ("Compose dimensions", "Cursor composite family/effort evidence"),
