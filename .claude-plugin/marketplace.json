@@ -45,7 +45,6 @@
       "name": "shipwright",
       "source": "./plugins/shipwright",
       "description": "Strict end-to-end development with adaptive subagents, independent review, and real verification.",
-      "version": "1.0.0",
       "author": {
         "name": "psjostrom"
       },
@@ -62,7 +61,6 @@
       "name": "handoff",
       "source": "./plugins/handoff",
       "description": "Creates self-contained handoff dossiers so a fresh standard or frontier agent can continue a task.",
-      "version": "1.0.0",
       "author": {
         "name": "psjostrom"
       },
