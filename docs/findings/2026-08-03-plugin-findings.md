@@ -129,29 +129,35 @@ The QA tool floors are no longer a blocker: `agent-browser` is now 0.33.2
 installed from the public npm registry, because the machine's default registry
 does not carry them.
 
-### S10 — The hand-rolled runbook duplicates a native, cost-capped eval runner — OPEN, HIGH VALUE
+### S10 — The hand-rolled runbook duplicates a native, cost-capped eval runner — OPEN, PORTABLE
 
-**Corrected recommendation:** confirm early-access availability and read a real
-scaffolded case, then port — do not port to an unseen format. A
-`claude plugin eval init --bare` probe printed "plugin eval is currently in
-early access" and wrote nothing, so neither author nor receiver has seen the
-case schema. Porting before that is a rework risk.
+**The schema is no longer unseen.** The subcommand is gated behind
+`Ke("tengu_walnut_spire", false) || CLAUDE_CODE_WALNUT_SPIRE`; with that env var
+set, `claude plugin eval init --bare` scaffolds a real case. Full verified
+contract — both case formats, all six grader types, frontmatter key sets,
+defaults and limits — is in `task/eval-schema.md`, with the CLI surface in
+`task/eval-help.txt`. Nothing below rests on inference now.
 
-Direction (once access is confirmed and a real case file has been read):
+Two constraints the contract imposes:
+
+- Authoring needs no runtime; **executing the suite does**, and the runner is
+  early-access behind that flag. A port can be written anywhere but can only be
+  run where Claude Code is installed and flagged.
+- `context.scaffold_script` is reachable only from `case.yaml`, not from
+  `prompt.md` frontmatter.
+
+Direction:
 
 - Reduce prose runbooks to harness preconditions the runner cannot express
   (credential choice, tool floors). Use `scaffold_script` instead of the
   hand-written seed (kills S4). Keep `--max-cost-usd` as a hard ceiling.
-- **Sequence:** do not port gate or routing cases until S13 is decided. Cases
-  blocked by the effort-evidence problem are `gate-claude-pass` /
-  `gate-claude-reject` and the
-  `explicit-routing` / `inherited-routing` / `child-evidence-match` /
-  `child-evidence-reject` family — roughly a third of the suite and the ones
-  with 3/3 hard-gate thresholds. If S13 drops effort floors where the harness
-  exposes no effort selector, their expected decisions change. Early value, if
-  desired after schema confirmation: harness-independent cases
-  `trivial-reduction`, `dependency-preflight`, `dependency-incompatible`,
-  `authorization-boundaries`, `qa-cli-backend`.
+- **Sequence:** the S13 gate is lifted — S13 is fixed, so the expected decisions
+  for `gate-claude-pass` / `gate-claude-reject` and the `explicit-routing` /
+  `inherited-routing` / `child-evidence-match` / `child-evidence-reject` family
+  are now settled against the child-effort waiver. Those cases still carry 3/3
+  hard-gate thresholds and the unattended-gate caveat below, so start with the
+  harness-independent ones: `trivial-reduction`, `dependency-preflight`,
+  `dependency-incompatible`, `authorization-boundaries`, `qa-cli-backend`.
 - **No synthetic-evidence path.** A test-only injector that fabricates a
   `/status` readout is the bypass the gate exists to forbid. If reachable
   outside tests the gate is decorative; if not, you are testing a fake and
@@ -164,9 +170,11 @@ Direction (once access is confirmed and a real case file has been read):
 - **Prefer deterministic graders.** Most Shipwright assertions are process
   compliance (no `.superpowers/`, repo unchanged, zero artifacts before the
   gate, ledger delta holds exactly one dispatch). Those are git/filesystem
-  checks; an LLM judge scores them unreliably and costs money. Confirm free /
-  non-LLM graders exist before committing (`--max-cost-usd` help implies paid
-  graders can be skipped while free graders still score). Reserve LLM criteria
+  checks; an LLM judge scores them unreliably and costs money. Four free
+  deterministic grader types cover them — `file_exists`, `regex`, `tool_used`,
+  and `tool_order` (which also expresses gate-before-artifacts ordering). Paid
+  graders are `llm` and `baseline`; on a cost breach those are skipped while free
+  graders still score the run. Reserve LLM criteria
   for genuinely subjective cases: review quality and
   `false-positive-adjudication`. Cheap judge only where a judge is the right
   tool.
@@ -246,6 +254,71 @@ Changed: `SKILL.md` §1 and §15; `references/claude-code.md`, `cursor.md`,
 `codex.md` controller gates; `evals/v1/scenarios.md` gate cases and
 `explicit-routing`; Claude/Cursor runbooks; validator markers and unit tests.
 `validate_shipwright.py` passes; 58 unit tests OK.
+
+### S15 — §3 reduction classifies on development size and ignores QA risk — OPEN, HIGH
+
+`SKILL.md` §3 reduces when work is "tiny, mechanical, locally obvious, and does
+not justify independent subagents." Every one of those criteria describes the
+*change*. None describes the verification surface.
+
+That misclassifies a whole category of real work: low-diff, high-QA tasks. A
+dependency bump is one line in `package.json` — tiny, mechanical, locally
+obvious on all four counts, so §3 reduces it — while being exactly the change
+that needs a real device, a real launch, and a regression sweep. The concrete
+case that surfaced this is a mobile Expo bump, where the diff is trivial and the
+QA surface is the entire app.
+
+Compounding it, the reduced path's obligations are undefined. §3 says "route it
+to a smaller workflow" without stating which Shipwright gates survive, and §11
+verification and §12 QA routing are not conditioned either way. One observation
+at `b221944` showed a reduced run retaining both — it ran the test suite before
+and after, checked the diff for unrelated changes, and reported "No QA surface
+applies" after assessing web/mobile/CLI/backend. So the reduced path is not
+skipping QA in practice. But that is a single observation of an underspecified
+rule, on a repo that happened to have no QA surface at all, so it does not show
+what a reduced run does when a surface *does* apply.
+
+Two fixes, both cheap:
+
+- Add a verification-surface dimension to the §3 criteria. Reduce only when the
+  change is small **and** the surface it can affect is narrow. Small diff plus
+  wide surface is not trivial work.
+- State explicitly that reduction never waives §11 verification or §12 QA
+  routing, so the reduced path's obligations stop depending on the reader.
+
+### S16 — The mobile QA probe checks the CLI version, not the capability — OPEN, HIGH
+
+§12's Android/iOS route says "Probe `argent --version`; require 0.16.0 or
+compatible newer." That probe cannot establish the capability it gates.
+
+argent is driven entirely through **MCP tools**, not the CLI. The target
+repository's own `.claude/rules/argent.md` is explicit: "All simulator/emulator
+interactions go through argent MCP tools — never use `xcrun simctl`, raw `curl`
+to simulator ports, or the simulator-server binary directly." CLI presence and
+tool availability are independent facts, and the probe only observes the first.
+
+Demonstrated directly, in one repository, across two sessions:
+
+| | `argent --version` | argent MCP tools | Mobile QA possible |
+| --- | --- | --- | --- |
+| Server not registered for this scope | `0.18.0` | none | no |
+| Server registered user-scoped | `0.18.0` | present, `list-devices` returns 32 simulators | yes |
+
+The probe returns the identical passing answer in both rows. In the first, §12
+would record the capability as present and then have nothing to drive the
+simulator with. §13 already carries the right rule ("Missing a core capability
+is `unverified`, not equivalent"); the specified probe simply tests the wrong
+thing.
+
+Fix by probing for the interaction tools themselves — the capability is the
+loaded MCP toolset, not an executable on `PATH`. A CLI version check is at best
+a secondary compatibility check *after* the tools are known to be present.
+
+This also refines S14's scope. Mobile QA is not inherently attended-only: with a
+user-scoped server the tools load in unrelated repositories, so an unattended
+mobile QA route is achievable. But it depends on the operator's install topology,
+which Shipwright cannot assume — which is exactly why it must probe the toolset
+rather than infer availability from the binary.
 
 ### S12 — Reduced runs still scaffold unrequested project files — OPEN, LOW
 
