@@ -328,6 +328,86 @@ unrequested scope from a task that asked for one function. Worth an explicit
 rule that the reduced path may not add project-level configuration without
 asking.
 
+### S17 — Cross-repository invocation has no defined subject repository — OPEN
+
+Invoked from a session rooted in this plugin repository, with a prompt naming a
+target in another checkout (`/Users/persjo/code/nordnet/mobile-app/src/ducks/
+userSettings`). Nothing in the skill resolves which repository is the subject.
+
+`SKILL.md` §1 inspects "repository instructions, fresh upstream baseline when
+relevant, branch/worktree, tracked and untracked changes" without naming a
+repository, so every one of those reads resolves against the process working
+directory. §5 then runs `git check-ignore` on the `.superpowers/` path and
+`git rev-parse --git-path info/exclude`, and writes
+`.superpowers/sdd/progress.md` and `runs/<dispatch-id>/` — all against that same
+wrong root.
+
+The two §1 safety rules degrade the same way. "Do not implement on `main` or
+`master` without explicit authorization" and "Preserve unrelated work" get
+evaluated against the plugin repository, which sat on `main` clean, while the
+actual target sat on a feature branch carrying an unrelated modified file. The
+guard passes by reading the wrong branch.
+
+§14 gives "Write outside the repository or task-specific temporary directories |
+Ask first", so the best case is a stall on an authorization question mid-run.
+The worse case is a ledger and worktree created beside the plugin while product
+edits land in the target, splitting the run's evidence from its diff.
+
+Fix in §1: make the subject repository an explicit preflight output, and stop
+when a requested target path lies outside the current repository root, directing
+the user to re-invoke from that repository. That is one added stop condition and
+it removes the ambiguity from every cross-repo prompt.
+
+### S18 — Merged fixes are absent from the installed cache, so FIXED findings still reproduce — OPEN, HIGH
+
+The `c298d6c` baseline recorded at the top of this document is not only the
+baseline; it is still the install state. `installed_plugins.json` pins
+`shipwright@agent-plugins` to `gitCommitSha c298d6c` with `lastUpdated`
+`2026-08-03T08:17:25Z`. That commit is #17, predating #18 (`91dc04f`), #19
+(`b221944`), and #30 (`99c6707`).
+
+After `/plugin marketplace update agent-plugins`, the marketplace clone advanced
+to `99c6707`, but `/plugin` still reported "already at the latest version
+(1.0.0)" and the installed cache stayed on `c298d6c`. `handoff` and `reviewer`
+share that same frozen SHA.
+
+So the cached `references/claude-code.md` still carries the pre-S1 gate:
+
+> Accept either: active alias `opus` only when current runtime evidence resolves
+> it to Claude Opus 4.7; or exact active model ID `claude-opus-4-7`. Require
+> effort rank `xhigh` or stronger.
+
+An operator invoking Shipwright on this machine therefore reproduces S1 and S14
+in full: `claude-opus-5[1m]` fails the exact pin, harness metadata carries no
+effort, and the run hard-stops at §1 demanding a downgrade. Every finding marked
+FIXED here is fixed in git and unfixed in the plugin that actually loads.
+
+Root cause: both the Claude `plugin.json` and the Claude marketplace entry pinned
+`version` to `1.0.0`. Claude Code keys `/plugin update` on that resolved version
+string, so commits that leave it unchanged never replace the cache. The project's
+own validators closed both remedies — they hard-asserted the Claude (and Cursor)
+manifest version is exactly `1.0.0`, so bumping failed validation and omitting
+failed too (`None != "1.0.0"`). Three consecutive merged PRs therefore delivered
+nothing to the installed copy.
+
+Fix: adopt the SHA-tracked channel. Omit `version` from the Claude-side
+`plugin.json` and the Claude marketplace entry for `shipwright` and `handoff`,
+and change those validators to require its absence. Cursor and Codex keep their
+version pins. Extend the validator unit tests so absence passes and a
+reintroduced Claude `version` fails.
+
+Two consequences for how this register is used:
+
+- Behavioral re-verification of any FIXED finding must be preceded by
+  `/plugin marketplace update agent-plugins` **and a session restart**. Skill
+  content resolves at session start, so an in-session update does not apply. A
+  re-verification run skipping that step measures `c298d6c` and reads as a
+  regression in already-fixed behavior.
+- Confirmations against a checkout and against the installed cache are different
+  claims. S1's confirmation was a headless run over a checkout supplied by
+  `--plugin-dir` (`evals/v1/claude-code-runbook.md:110`), which proves the
+  source is correct but says nothing about what an ordinary invocation loads.
+
 ## Handoff
 
 ### H1 — The command shadows the skill, losing the proactive-offer trigger — OPEN
