@@ -995,8 +995,8 @@ class ShipwrightValidatorTests(unittest.TestCase):
         skill = "plugins/shipwright/skills/shipwright/SKILL.md"
         self.replace(
             skill,
-            "Disclose that effort evidence state in the completion report and in any authorized PR body, not only the ledger.",
-            "Report completion status. Mention an authorized PR body only for publication scope.",
+            "Disclose that effort evidence state in the completion report and the ledger",
+            "Report completion status without recording effort evidence state",
         )
         errors = validate_bundle(self.repo_root)
         self.assertTrue(
