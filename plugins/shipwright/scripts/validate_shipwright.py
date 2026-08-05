@@ -909,10 +909,14 @@ def _validate_skill_and_contracts(
             ),
             (
                 "Disclose that effort evidence state in the completion report and the ledger",
-                "controller effort completion and PR disclosure",
+                "controller effort completion and ledger disclosure",
             ),
             (
-                "unless repository instructions forbid AI-attribution",
+                "Put it in an authorized PR body as well",
+                "controller effort positive PR-body disclosure",
+            ),
+            (
+                "forbid AI-attribution or tooling references in user-facing text",
                 "controller effort PR disclosure yields to repo rules",
             ),
             (
@@ -920,8 +924,12 @@ def _validate_skill_and_contracts(
                 "§1 refuse tool-owned workspace placement",
             ),
             (
-                "Prove the test runner actually discovers tests in the chosen workspace",
+                "Run an explicit discovery or collection command",
                 "§1 prove test discovery in workspace",
+            ),
+            (
+                "Do not treat a single targeted known-good test as sufficient",
+                "§1 reject targeted-test discovery substitute",
             ),
             (
                 "measure it at the merge base",
@@ -942,6 +950,10 @@ def _validate_skill_and_contracts(
             (
                 "**Orphaned work.**",
                 "§7 orphaned-work adoption path",
+            ),
+            (
+                "non-destructive ownership and diff-scope check",
+                "§7 orphaned-work red-tree ownership check",
             ),
             (
                 "may serve both the final task's §8 gate and this whole-change gate",
@@ -1116,10 +1128,18 @@ def _validate_skill_and_contracts(
             ),
             (
                 "Claude Code's subagent tooling prevents children from writing report files",
+                "Claude child report file precondition",
+            ),
+            (
+                "have the controller persist it to the dispatch's artifact directory",
                 "Claude controller-persisted child reports",
             ),
             (
                 "Children will keep offering environment-variable-sourced effort",
+                "Claude env-sourced effort precondition",
+            ),
+            (
+                "expect it, reject it",
                 "Claude expected rejected env effort",
             ),
             (
