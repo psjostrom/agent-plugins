@@ -1056,6 +1056,10 @@ def _validate_skill_and_contracts(
                 "§1 worktree exception for generated gitignored files",
             ),
             (
+                "When §1's generated-gitignored-file exception applies, skip the fresh worktree",
+                "§4 worktree handoff honors §1 generated-file exception",
+            ),
+            (
                 "Resolve it before dispatch, not at commit time",
                 "§1 commit-gate preflight against task files",
             ),

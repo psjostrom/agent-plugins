@@ -1088,8 +1088,8 @@ class ShipwrightValidatorTests(unittest.TestCase):
             ),
             (
                 "you cannot upload the images yourself",
-                "prefer embedding private-repo-scoped image URLs when obtainable without new credentials or policy breach",
-                "§12 PR images require human browser upload",
+                "you cannot upload the images yourself; prefer embedding private-repo-scoped image URLs when obtainable without new credentials or policy breach",
+                "§12 soft PR-upload hedge",
             ),
             (
                 "Any literal expected value must either be measured",
@@ -1100,6 +1100,11 @@ class ShipwrightValidatorTests(unittest.TestCase):
                 "work on a branch in the main checkout instead",
                 "always create a fresh worktree even when generated files are missing",
                 "§1 worktree exception for generated gitignored files",
+            ),
+            (
+                "When §1's generated-gitignored-file exception applies, skip the fresh worktree",
+                "Always create a fresh worktree after plan approval",
+                "§4 worktree handoff honors §1 generated-file exception",
             ),
             (
                 "Resolve it before dispatch, not at commit time",
