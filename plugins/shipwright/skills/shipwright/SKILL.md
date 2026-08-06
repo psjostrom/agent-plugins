@@ -194,13 +194,13 @@ Missing *capability* tools (browser/mobile MCP, agent-browser, and similar) neve
 
 ## 14. Authorization matrix
 
-**Self-unblocking is an obligation, not a permission.** §§1 and §11 require a workspace that can build and test. When it cannot, restore the project's declared state without asking — install from the committed manifest (`npm install` / `npm ci`, `pod install`, `bundle install`), generate gitignored build artifacts the project expects, rebuild a native dev client, clear tool caches. Afterwards, prove declared state is unchanged (manifests and lockfiles byte-identical) and record both the action and the proof in the ledger. If that proof fails, stop and surface the drift. Reporting `BLOCKED` for a condition standard project setup would repair is a failure of the run.
+**Self-unblocking is an obligation, not a permission.** §§1 and §11 require a workspace that can build and test. When it cannot, restore the project's declared state without asking — install from the committed manifest (`npm install` / `npm ci`, `pod install`, `bundle install`), generate gitignored build artifacts the project expects, rebuild a native dev client, clear project-local tool caches (not shared machine-wide caches). Afterwards, prove declared state is unchanged (manifests and lockfiles byte-identical) and record both the action and the proof in the ledger. If that proof fails, stop and surface the drift. Reporting `BLOCKED` for a condition standard project setup would repair is a failure of the run.
 
 | Action | Default |
 | --- | --- |
 | Read scoped repository state and public documentation/package metadata | Allowed when relevant and sandbox/network policy permits |
 | Modify scoped repository files and make local commits | Allowed by an explicit Shipwright implementation request |
-| Restore declared project state (install from lockfile/manifest, generate expected gitignored artifacts, rebuild dev client, clear caches) | Allowed; then prove manifests/lockfiles unchanged |
+| Restore declared project state (install from lockfile/manifest, generate expected gitignored artifacts, rebuild dev client, clear project-local caches) | Allowed; then prove manifests/lockfiles unchanged |
 | Add/upgrade dependencies, mutate lockfile contents intentionally, edit CI/build/`package.json`, install global tools, or configure plugins/MCP | Ask first |
 | Write outside the repository or task-specific temporary directories | Ask first |
 | Use credentials, signed-in state, external accounts/services, or paid quota | Ask first unless the exact safe system/account is explicitly in scope |

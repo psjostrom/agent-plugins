@@ -1109,6 +1109,10 @@ def _validate_skill_and_contracts(
                 "§14 self-unblocking obligation",
             ),
             (
+                "clear project-local tool caches",
+                "§14 project-local cache clearing only",
+            ),
+            (
                 "Restore declared project state",
                 "authorization boundary for restoring declared state",
             ),
