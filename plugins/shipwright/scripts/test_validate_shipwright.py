@@ -1086,6 +1086,36 @@ class ShipwrightValidatorTests(unittest.TestCase):
                 "If that proof fails, continue anyway",
                 "§14 restoration drift handling",
             ),
+            (
+                "you cannot upload the images yourself",
+                "prefer embedding private-repo-scoped image URLs when obtainable without new credentials or policy breach",
+                "§12 PR images require human browser upload",
+            ),
+            (
+                "Any literal expected value must either be measured",
+                "Literal expected values may be inferred from nearby mocks",
+                "§4 literal expected values must be measured",
+            ),
+            (
+                "work on a branch in the main checkout instead",
+                "always create a fresh worktree even when generated files are missing",
+                "§1 worktree exception for generated gitignored files",
+            ),
+            (
+                "Resolve it before dispatch, not at commit time",
+                "Discover commit-gate collisions at commit time",
+                "§1 commit-gate preflight against task files",
+            ),
+            (
+                "record it as impossible, state why in one line",
+                "treat impossible observations as unverified with no substitute",
+                "§13 structurally impossible named observations",
+            ),
+            (
+                "This does not upgrade the outcome: it remains non-passing",
+                "This upgrades the outcome to verified when substitutes are strong",
+                "§13 impossible observation stays non-passing",
+            ),
         )
         for old, new, fragment in cases:
             with self.subTest(fragment=fragment):
@@ -1154,6 +1184,11 @@ class ShipwrightValidatorTests(unittest.TestCase):
                 "expect it, and accept it when present",
                 "Claude expected rejected env effort",
             ),
+            (
+                "the ledger is a local artifact, not a reply — record it there",
+                "treat the child agent ID as unavailable when it must not be shown to the user",
+                "Claude child agent ID recorded in ledger",
+            ),
         )
         for old, new, fragment in cases:
             with self.subTest(fragment=fragment):
@@ -1166,9 +1201,14 @@ class ShipwrightValidatorTests(unittest.TestCase):
                         "Claude Code's subagent tooling prevents children from writing report files",
                         remaining,
                     )
-                else:
+                elif fragment == "Claude expected rejected env effort":
                     self.assertIn(
                         "Children will keep offering environment-variable-sourced effort",
+                        remaining,
+                    )
+                else:
+                    self.assertIn(
+                        "The controller independently reads the child session record when exposed",
                         remaining,
                     )
                 errors = validate_bundle(self.repo_root)
