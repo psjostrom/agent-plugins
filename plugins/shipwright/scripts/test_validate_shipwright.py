@@ -996,14 +996,14 @@ class ShipwrightValidatorTests(unittest.TestCase):
         original = self.path(skill).read_text(encoding="utf-8")
         cases = (
             (
-                "Disclose that effort evidence state in the completion report and the ledger",
-                "Report completion status without recording effort evidence state",
-                "controller effort completion and ledger disclosure",
+                "suppress `unverifiable` from the user-facing completion report",
+                "always disclose unverifiable effort in the completion report",
+                "controller effort suppress unverifiable from completion report",
             ),
             (
-                "Put it in an authorized PR body as well",
-                "Omit effort evidence from any authorized PR body",
-                "controller effort positive PR-body disclosure",
+                "always record the effort evidence state in the ledger",
+                "omit effort evidence from the ledger",
+                "controller effort always recorded in ledger",
             ),
             (
                 "forbid AI-attribution or tooling references in user-facing text",
@@ -1185,7 +1185,7 @@ class ShipwrightValidatorTests(unittest.TestCase):
         skill = "plugins/shipwright/skills/shipwright/SKILL.md"
         original = self.path(skill).read_text(encoding="utf-8")
         definitions = (
-            "- `verified`: every mandatory observation and artifact exists and the flow passed.\n",
+            "- `verified`: every mandatory observation and artifact exists and the flow passed; for visual surfaces this includes the published session evidence (absolute QA path plus diff/observation numbers in the completion report).\n",
             "- `partially verified`: every core observation passed, but a named non-core planned observation was unavailable.\n",
             "- `unverified`: the flow could not run, the interaction surface was unavailable, or core evidence is missing.\n",
         )
@@ -1202,7 +1202,7 @@ class ShipwrightValidatorTests(unittest.TestCase):
         skill = "plugins/shipwright/skills/shipwright/SKILL.md"
         original = self.path(skill).read_text(encoding="utf-8")
         definitions = (
-            "- `verified`: every mandatory observation and artifact exists and the flow passed.\n",
+            "- `verified`: every mandatory observation and artifact exists and the flow passed; for visual surfaces this includes the published session evidence (absolute QA path plus diff/observation numbers in the completion report).\n",
             "- `partially verified`: every core observation passed, but a named non-core planned observation was unavailable.\n",
             "- `unverified`: the flow could not run, the interaction surface was unavailable, or core evidence is missing.\n",
         )
@@ -1226,7 +1226,7 @@ class ShipwrightValidatorTests(unittest.TestCase):
         skill = "plugins/shipwright/skills/shipwright/SKILL.md"
         original = self.path(skill).read_text(encoding="utf-8")
         definitions = (
-            "- `verified`: every mandatory observation and artifact exists and the flow passed.\n",
+            "- `verified`: every mandatory observation and artifact exists and the flow passed; for visual surfaces this includes the published session evidence (absolute QA path plus diff/observation numbers in the completion report).\n",
             "- `partially verified`: every core observation passed, but a named non-core planned observation was unavailable.\n",
             "- `unverified`: the flow could not run, the interaction surface was unavailable, or core evidence is missing.\n",
         )
@@ -1275,7 +1275,7 @@ class ShipwrightValidatorTests(unittest.TestCase):
         skill = "plugins/shipwright/skills/shipwright/SKILL.md"
         original = self.path(skill).read_text(encoding="utf-8")
         definition = (
-            "- `verified`: every mandatory observation and artifact exists and the flow passed.\n"
+            "- `verified`: every mandatory observation and artifact exists and the flow passed; for visual surfaces this includes the published session evidence (absolute QA path plus diff/observation numbers in the completion report).\n"
         )
         without_active = original.replace(definition, "", 1)
         wrappers = (
@@ -1298,7 +1298,11 @@ class ShipwrightValidatorTests(unittest.TestCase):
     def test_reports_missing_authorization_boundaries(self) -> None:
         skill = "plugins/shipwright/skills/shipwright/SKILL.md"
         for old, new in (
-            ("Install/download tools", "Use tools"),
+            ("Restore declared project state", "Ignore declared project state"),
+            (
+                "Add/upgrade dependencies, mutate lockfile contents intentionally",
+                "Change dependencies freely",
+            ),
             ("paid quota", "resources"),
             ("push; open a PR; deploy; publish", "release actions"),
             ("Destructive filesystem or git action", "Risky action"),
