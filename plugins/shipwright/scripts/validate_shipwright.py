@@ -912,6 +912,10 @@ def _validate_skill_and_contracts(
                 "controller effort suppress unverifiable from completion report",
             ),
             (
+                "and from any authorized PR body",
+                "controller effort suppress unverifiable from authorized PR body",
+            ),
+            (
                 "always record the effort evidence state in the ledger",
                 "controller effort always recorded in ledger",
             ),
@@ -956,6 +960,10 @@ def _validate_skill_and_contracts(
                 "§11 piped exit-status warning",
             ),
             (
+                "Redirect to a file and read `$?`",
+                "§11 file-backed tool exit status",
+            ),
+            (
                 "harness-reported completion code for a compound command is not the tool's exit status",
                 "§11 harness completion exit is not tool exit",
             ),
@@ -988,6 +996,10 @@ def _validate_skill_and_contracts(
                 "§8 reading evidence section",
             ),
             (
+                "Read exit status from a value written to a file",
+                "§8 reading evidence file-backed exit status",
+            ),
+            (
                 "declare the plan frozen with the ledger authoritative",
                 "§8 plan vs ledger after remediation override",
             ),
@@ -1002,6 +1014,18 @@ def _validate_skill_and_contracts(
             (
                 "Screenshots are mandatory for applicable visual surfaces",
                 "§12 mandatory screenshots",
+            ),
+            (
+                "identical before/after screens are the required artifact",
+                "§12 before/after screens required artifact",
+            ),
+            (
+                "absolute QA evidence directory path",
+                "§12 absolute QA evidence path in completion report",
+            ),
+            (
+                "quantitative diff/observation numbers",
+                "§12 quantitative diff or observation numbers",
             ),
             (
                 "Prefer provisioning a fresh simulator/emulator",
@@ -1087,6 +1111,18 @@ def _validate_skill_and_contracts(
             (
                 "Restore declared project state",
                 "authorization boundary for restoring declared state",
+            ),
+            (
+                "manifests and lockfiles byte-identical",
+                "§14 byte-identical restoration proof",
+            ),
+            (
+                "record both the action and the proof in the ledger",
+                "§14 restoration proof recorded in ledger",
+            ),
+            (
+                "If that proof fails, stop and surface the drift",
+                "§14 restoration drift handling",
             ),
             (
                 "Add/upgrade dependencies, mutate lockfile contents intentionally",
