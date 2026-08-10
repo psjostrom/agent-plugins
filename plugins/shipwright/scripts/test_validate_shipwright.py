@@ -996,14 +996,19 @@ class ShipwrightValidatorTests(unittest.TestCase):
         original = self.path(skill).read_text(encoding="utf-8")
         cases = (
             (
-                "Disclose that effort evidence state in the completion report and the ledger",
-                "Report completion status without recording effort evidence state",
-                "controller effort completion and ledger disclosure",
+                "suppress `unverifiable` from the user-facing completion report",
+                "always disclose unverifiable effort in the completion report",
+                "controller effort suppress unverifiable from completion report",
             ),
             (
-                "Put it in an authorized PR body as well",
-                "Omit effort evidence from any authorized PR body",
-                "controller effort positive PR-body disclosure",
+                "and from any authorized PR body",
+                "but never from any authorized PR body",
+                "controller effort suppress unverifiable from authorized PR body",
+            ),
+            (
+                "always record the effort evidence state in the ledger",
+                "omit effort evidence from the ledger",
+                "controller effort always recorded in ledger",
             ),
             (
                 "forbid AI-attribution or tooling references in user-facing text",
@@ -1022,6 +1027,154 @@ class ShipwrightValidatorTests(unittest.TestCase):
                 )
         self.path(skill).write_text(original, encoding="utf-8")
 
+    def test_reports_missing_field_report_contract_markers(self) -> None:
+        skill = "plugins/shipwright/skills/shipwright/SKILL.md"
+        original = self.path(skill).read_text(encoding="utf-8")
+        cases = (
+            (
+                "compare filtered path *sets*",
+                "compare filtered path counts",
+                "§1 discovery uses path sets not counts",
+            ),
+            (
+                "Redirect to a file and read `$?`",
+                "Read exit status from the harness completion code",
+                "§11 file-backed tool exit status",
+            ),
+            (
+                "Read exit status from a value written to a file",
+                "Read exit status from the compound command",
+                "§8 reading evidence file-backed exit status",
+            ),
+            (
+                "Take the child thread/run ID from the harness spawn result",
+                "Require the child to self-report its thread/run ID",
+                "§7 child run ID from harness spawn",
+            ),
+            (
+                "**Reading evidence.**",
+                "**Evidence notes.**",
+                "§8 reading evidence section",
+            ),
+            (
+                "identical before/after screens are the required artifact",
+                "screenshots are optional when the UI is unchanged",
+                "§12 before/after screens required artifact",
+            ),
+            (
+                "absolute QA evidence directory path",
+                "relative QA evidence directory path",
+                "§12 absolute QA evidence path in completion report",
+            ),
+            (
+                "quantitative diff/observation numbers",
+                "qualitative screenshot impressions",
+                "§12 quantitative diff or observation numbers",
+            ),
+            (
+                "manifests and lockfiles byte-identical",
+                "manifests and lockfiles approximately unchanged",
+                "§14 byte-identical restoration proof",
+            ),
+            (
+                "record both the action and the proof in the ledger",
+                "record the action without the proof in the ledger",
+                "§14 restoration proof recorded in ledger",
+            ),
+            (
+                "If that proof fails, stop and surface the drift",
+                "If that proof fails, continue anyway",
+                "§14 restoration drift handling",
+            ),
+            (
+                "you cannot upload the images yourself",
+                "you cannot upload the images yourself; prefer embedding private-repo-scoped image URLs when obtainable without new credentials or policy breach",
+                "§12 soft PR-upload hedge",
+            ),
+            (
+                "Any literal expected value must either be measured",
+                "Literal expected values may be inferred from nearby mocks",
+                "§4 literal expected values must be measured",
+            ),
+            (
+                "work on a branch in the main checkout instead",
+                "always create a fresh worktree even when generated files are missing",
+                "§1 worktree exception for generated gitignored files",
+            ),
+            (
+                "When §1's generated-gitignored-file exception applies, skip the fresh worktree",
+                "Always create a fresh worktree after plan approval",
+                "§4 worktree handoff honors §1 generated-file exception",
+            ),
+            (
+                "Resolve it before dispatch, not at commit time",
+                "Discover commit-gate collisions at commit time",
+                "§1 commit-gate preflight against task files",
+            ),
+            (
+                "record it as impossible, state why in one line",
+                "treat impossible observations as unverified with no substitute",
+                "§13 structurally impossible named observations",
+            ),
+            (
+                "This does not upgrade the outcome: it remains non-passing",
+                "This upgrades the outcome to verified when substitutes are strong",
+                "§13 impossible observation stays non-passing",
+            ),
+        )
+        for old, new, fragment in cases:
+            with self.subTest(fragment=fragment):
+                self.path(skill).write_text(original, encoding="utf-8")
+                self.replace(skill, old, new)
+                errors = validate_bundle(self.repo_root)
+                self.assertTrue(
+                    any(fragment in error for error in errors),
+                    errors,
+                )
+        self.path(skill).write_text(original, encoding="utf-8")
+
+    def test_rejects_weakened_verified_definition_contract(self) -> None:
+        skill = "plugins/shipwright/skills/shipwright/SKILL.md"
+        original = self.path(skill).read_text(encoding="utf-8")
+        full = (
+            "- `verified`: every mandatory observation and artifact exists and the "
+            "flow passed; for visual surfaces this includes the published session "
+            "evidence (absolute QA path plus diff/observation numbers in the "
+            "completion report).\n"
+        )
+        weakened = (
+            "- `verified`: every mandatory observation and artifact exists and the "
+            "flow passed.\n"
+        )
+        self.assertIn(full, original)
+        text = original.replace(full, weakened, 1)
+        text = text.replace(
+            "absolute QA evidence directory path and quantitative diff/observation numbers",
+            "a brief QA summary",
+            1,
+        )
+        text = text.replace("absolute QA evidence directory path", "QA evidence directory path")
+        text = text.replace(
+            "quantitative diff/observation numbers", "observation notes"
+        )
+        self.path(skill).write_text(text, encoding="utf-8")
+        errors = validate_bundle(self.repo_root)
+        self.assertTrue(
+            any(
+                "§12 absolute QA evidence path in completion report" in error
+                for error in errors
+            ),
+            errors,
+        )
+        self.assertTrue(
+            any(
+                "§12 quantitative diff or observation numbers" in error
+                for error in errors
+            ),
+            errors,
+        )
+        self.path(skill).write_text(original, encoding="utf-8")
+
     def test_reports_missing_claude_controller_child_report_actions(self) -> None:
         claude = "plugins/shipwright/skills/shipwright/references/claude-code.md"
         original = self.path(claude).read_text(encoding="utf-8")
@@ -1036,6 +1189,11 @@ class ShipwrightValidatorTests(unittest.TestCase):
                 "expect it, and accept it when present",
                 "Claude expected rejected env effort",
             ),
+            (
+                "the ledger is a local artifact, not a reply — record it there",
+                "treat the child agent ID as unavailable when it must not be shown to the user",
+                "Claude child agent ID recorded in ledger",
+            ),
         )
         for old, new, fragment in cases:
             with self.subTest(fragment=fragment):
@@ -1048,9 +1206,14 @@ class ShipwrightValidatorTests(unittest.TestCase):
                         "Claude Code's subagent tooling prevents children from writing report files",
                         remaining,
                     )
-                else:
+                elif fragment == "Claude expected rejected env effort":
                     self.assertIn(
                         "Children will keep offering environment-variable-sourced effort",
+                        remaining,
+                    )
+                else:
+                    self.assertIn(
+                        "The controller independently reads the child session record when exposed",
                         remaining,
                     )
                 errors = validate_bundle(self.repo_root)
@@ -1185,7 +1348,7 @@ class ShipwrightValidatorTests(unittest.TestCase):
         skill = "plugins/shipwright/skills/shipwright/SKILL.md"
         original = self.path(skill).read_text(encoding="utf-8")
         definitions = (
-            "- `verified`: every mandatory observation and artifact exists and the flow passed.\n",
+            "- `verified`: every mandatory observation and artifact exists and the flow passed; for visual surfaces this includes the published session evidence (absolute QA path plus diff/observation numbers in the completion report).\n",
             "- `partially verified`: every core observation passed, but a named non-core planned observation was unavailable.\n",
             "- `unverified`: the flow could not run, the interaction surface was unavailable, or core evidence is missing.\n",
         )
@@ -1202,7 +1365,7 @@ class ShipwrightValidatorTests(unittest.TestCase):
         skill = "plugins/shipwright/skills/shipwright/SKILL.md"
         original = self.path(skill).read_text(encoding="utf-8")
         definitions = (
-            "- `verified`: every mandatory observation and artifact exists and the flow passed.\n",
+            "- `verified`: every mandatory observation and artifact exists and the flow passed; for visual surfaces this includes the published session evidence (absolute QA path plus diff/observation numbers in the completion report).\n",
             "- `partially verified`: every core observation passed, but a named non-core planned observation was unavailable.\n",
             "- `unverified`: the flow could not run, the interaction surface was unavailable, or core evidence is missing.\n",
         )
@@ -1226,7 +1389,7 @@ class ShipwrightValidatorTests(unittest.TestCase):
         skill = "plugins/shipwright/skills/shipwright/SKILL.md"
         original = self.path(skill).read_text(encoding="utf-8")
         definitions = (
-            "- `verified`: every mandatory observation and artifact exists and the flow passed.\n",
+            "- `verified`: every mandatory observation and artifact exists and the flow passed; for visual surfaces this includes the published session evidence (absolute QA path plus diff/observation numbers in the completion report).\n",
             "- `partially verified`: every core observation passed, but a named non-core planned observation was unavailable.\n",
             "- `unverified`: the flow could not run, the interaction surface was unavailable, or core evidence is missing.\n",
         )
@@ -1275,7 +1438,7 @@ class ShipwrightValidatorTests(unittest.TestCase):
         skill = "plugins/shipwright/skills/shipwright/SKILL.md"
         original = self.path(skill).read_text(encoding="utf-8")
         definition = (
-            "- `verified`: every mandatory observation and artifact exists and the flow passed.\n"
+            "- `verified`: every mandatory observation and artifact exists and the flow passed; for visual surfaces this includes the published session evidence (absolute QA path plus diff/observation numbers in the completion report).\n"
         )
         without_active = original.replace(definition, "", 1)
         wrappers = (
@@ -1298,7 +1461,11 @@ class ShipwrightValidatorTests(unittest.TestCase):
     def test_reports_missing_authorization_boundaries(self) -> None:
         skill = "plugins/shipwright/skills/shipwright/SKILL.md"
         for old, new in (
-            ("Install/download tools", "Use tools"),
+            ("Restore declared project state", "Ignore declared project state"),
+            (
+                "Add/upgrade dependencies, mutate lockfile contents intentionally",
+                "Change dependencies freely",
+            ),
             ("paid quota", "resources"),
             ("push; open a PR; deploy; publish", "release actions"),
             ("Destructive filesystem or git action", "Risky action"),
@@ -1308,6 +1475,37 @@ class ShipwrightValidatorTests(unittest.TestCase):
         self.assertGreaterEqual(
             sum("authorization boundary" in error for error in errors), 4, errors
         )
+
+    def test_reports_missing_restoration_proof_contract(self) -> None:
+        skill = "plugins/shipwright/skills/shipwright/SKILL.md"
+        original = self.path(skill).read_text(encoding="utf-8")
+        cases = (
+            (
+                "manifests and lockfiles byte-identical",
+                "manifests and lockfiles look fine",
+                "§14 byte-identical restoration proof",
+            ),
+            (
+                "record both the action and the proof in the ledger",
+                "mention the action casually",
+                "§14 restoration proof recorded in ledger",
+            ),
+            (
+                "If that proof fails, stop and surface the drift",
+                "If that proof fails, ignore the drift",
+                "§14 restoration drift handling",
+            ),
+        )
+        for old, new, fragment in cases:
+            with self.subTest(fragment=fragment):
+                self.path(skill).write_text(original, encoding="utf-8")
+                self.replace(skill, old, new)
+                errors = validate_bundle(self.repo_root)
+                self.assertTrue(
+                    any(fragment in error for error in errors),
+                    errors,
+                )
+        self.path(skill).write_text(original, encoding="utf-8")
 
     def test_reports_stale_public_name_and_profile_dependency(self) -> None:
         skill = "plugins/shipwright/skills/shipwright/SKILL.md"

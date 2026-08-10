@@ -86,7 +86,7 @@ Forbidden: public image hosts for app UI. Never imply screenshots are on the PR 
 - `pod install`, `bundle install`
 - generate gitignored artifacts the project’s build expects
 - native rebuild of a dev client
-- clear tool caches (Metro `--clear`, watchman, etc.)
+- clear project-local tool caches (Metro `--clear`, this-repo watchman, etc. — not shared machine-wide caches)
 
 **Then prove:** package manifests and lockfiles are byte-identical (or record and surface any unexpected declared-state drift). Record the action and the proof in the ledger.
 
