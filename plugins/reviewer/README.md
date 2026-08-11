@@ -216,10 +216,11 @@ the synthesis reports a clean review.
 
 ## Decision gate
 
-Initial review is read-only. After reporting, Reviewer asks which numbered
-findings to address. In PR mode it also asks whether to fix them directly or
-post them as GitHub review comments. It does not edit, comment, approve, request
-changes, commit, push, or merge before the user chooses.
+Initial review is read-only. If the input says `stop after reporting`, Reviewer
+stops immediately after the initial report. Otherwise, Reviewer asks which
+numbered findings to address. In PR mode it also asks whether to fix them
+directly or post them as GitHub review comments. It does not edit, comment,
+approve, request changes, commit, push, or merge before the user chooses.
 
 ### Fix selected findings
 
@@ -315,15 +316,18 @@ Reload the Cursor window after installing or reinstalling.
 
 ### opencode
 
-Install globally or for the current project:
+Install globally for trusted shared-skill resolution. A project install adds
+project-local discovery links, but it is not sufficient by itself because the
+command deliberately resolves shared files only from the trusted global
+symlink:
 
 ```sh
 ./install-opencode.sh install reviewer
 ./install-opencode.sh install reviewer --project
 ```
 
-Invoke `/parallel-review`. The command resolves the shared skill only through
-the trusted global install symlink and passes `SHARED_ROOT` to every child.
+Invoke `/parallel-review`. The command resolves the shared skill through the
+trusted global install symlink and passes `SHARED_ROOT` to every child.
 Specialist model selection belongs in `opencode.json`; Task calls do not take
 per-call model overrides. The `--opus` flag is accepted for compatibility but
 does not change the child model. Configure a Sonnet-class or equivalent

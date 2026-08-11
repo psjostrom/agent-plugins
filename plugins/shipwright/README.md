@@ -10,9 +10,9 @@ checks the active harness and model floor, preserves unrelated work, requires
 independent review, and refuses to call incomplete QA complete.
 
 The shared contract lives in
-[`skills/shipwright/SKILL.md`](skills/shipwright/SKILL.md). Harness-specific
+[`plugins/shipwright/skills/shipwright/SKILL.md`](../../plugins/shipwright/skills/shipwright/SKILL.md). Harness-specific
 runtime and dispatch rules live in
-[`skills/shipwright/references/`](skills/shipwright/references/).
+[`plugins/shipwright/skills/shipwright/references/`](../../plugins/shipwright/skills/shipwright/references/).
 
 ## When to use it
 
@@ -336,7 +336,8 @@ subagent tooling does not let children write report files.
 ### Cursor
 
 Install Shipwright from the marketplace and Superpowers `6.1.1+` separately.
-Invoke `/shipwright`. The controller gate requires resolved Grok `4.5+`.
+Invoke `/shipwright`. The controller gate requires a model resolved to Grok
+`4.5` or newer.
 Cursor maps mechanical/ordinary work to Composer and integration/critical work
 to Grok, with the effort floors shown above. Do not describe GPT Luna/Terra/Sol
 as Cursor worker runtimes; they are not allowlisted here.

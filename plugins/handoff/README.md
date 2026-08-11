@@ -100,7 +100,10 @@ If the git root cannot be identified, Handoff stops and asks. If there is no
 code yet, it still writes a dossier based on mission, decisions, and next
 actions.
 
-It does not stash, commit, clean, or otherwise mutate the dirty tree.
+It does not modify existing repository files or the dirty working tree. It does
+not stash, commit, clean, or otherwise mutate Git work state. It creates
+exactly one new dossier file under `.handoff/`, and may add the required
+`.handoff/` entry to the repository-local Git exclude file.
 
 ## Dossier path and safety
 
@@ -126,7 +129,8 @@ established, it stops before writing.
 The slug comes from the mission:
 
 - lowercase;
-- split on whitespace and separators;
+- split on whitespace and separators (`_`, `/`, `\`, `.`, and punctuation other
+  than `-`);
 - keep only `a-z`, `0-9`, and `-`;
 - collapse repeated hyphens and trim them;
 - require two to six non-empty kebab-case words;
@@ -167,7 +171,8 @@ The receiver must follow this order:
    reality, restate the next action in one sentence, then begin work.
 
 The mismatch response is intentionally short: required tier, current
-under-tier/unknown status, and the switch-or-override instruction.
+under-tier, Auto, unknown, or unlabeled status, and the switch-or-override
+instruction.
 
 ### Mission
 
@@ -255,7 +260,10 @@ not use Claude plugin prefixes or Codex `$skill` syntax in opencode prompts.
   — tier recommendation and receiver gate.
 - [`skills/handoff/references/dossier.md`](skills/handoff/references/dossier.md)
   — exact path, slug, sections, resume prompt, and tier emphasis.
-- [`skills/handoff/references/{codex,claude-code,cursor,opencode}.md`](skills/handoff/references/)
+- [`skills/handoff/references/codex.md`](skills/handoff/references/codex.md),
+  [`skills/handoff/references/claude-code.md`](skills/handoff/references/claude-code.md),
+  [`skills/handoff/references/cursor.md`](skills/handoff/references/cursor.md),
+  and [`skills/handoff/references/opencode.md`](skills/handoff/references/opencode.md)
   — platform invocation adapters.
 - `commands/` and `opencode/commands/` — thin discovery shells.
 

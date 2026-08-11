@@ -57,7 +57,9 @@ Authorization: Bearer <HOMEY_TOKEN>
 
 The command reads the token from `HOMEY_TOKEN`. Set the actual Homey address in
 the shell context used for the request; the command file contains the current
-local default. Homey API endpoints require a trailing slash, for example:
+local default. Collection and card endpoints require a trailing slash. Flow
+ID `PUT` and `DELETE` endpoints intentionally omit it; keep those URL forms
+distinct. Collection example:
 
 ```sh
 TOKEN="$HOMEY_TOKEN"
@@ -101,8 +103,8 @@ argument name, device ID, or capability name from a similar device.
 | --- | --- | --- |
 | `GET` | `/api/manager/flow/flow/` | List all flows |
 | `POST` | `/api/manager/flow/flow/` | Create a flow object at the top level |
-| `PUT` | `/api/manager/flow/flow/{id}/` | Partial update; send only changed fields |
-| `DELETE` | `/api/manager/flow/flow/{id}/` | Delete a flow after confirmation |
+| `PUT` | `/api/manager/flow/flow/{id}` | Partial update; send only changed fields |
+| `DELETE` | `/api/manager/flow/flow/{id}` | Delete a flow after confirmation |
 
 The create body is not nested under `{ "flow": { ... } }`:
 
@@ -269,9 +271,9 @@ UUID and branch output before posting.
 
 | Mistake | Symptom | Fix |
 | --- | --- | --- |
-| Missing trailing slash | `404` | Add `/` to the endpoint |
+| Missing trailing slash on collection/card URL | `404` | Add `/`; flow ID `PUT`/`DELETE` URLs intentionally omit it |
 | Missing condition `group` | Homey UI crashes with `push` of undefined | Add `group1`, `group2`, or `group3` |
-| Colon in `droptoken` | UI shows `Unavailable` | Use `device-id|capability` |
+| Colon in `droptoken` | UI shows `Unavailable` | Use `device-id\|capability` |
 | Body nested under `flow` | `Missing Parameter: flow.name` | Put fields at the top level |
 | Invented sensor condition card | Card is unavailable | Use a sensor trigger and a Logic condition with `droptoken` |
 | Kelvin-linear temperature mapping | Wrong light output | Convert Kelvin to mireds first |
