@@ -505,6 +505,16 @@ class ShipwrightValidatorTests(unittest.TestCase):
                 "Codex worker version floor",
             ),
             (
+                "Terra and Sol/Medium are not allowlisted Shipwright worker routes",
+                "Terra and Sol/Medium may be allowlisted Shipwright worker routes",
+                "Codex worker routing exclusions",
+            ),
+            (
+                "Do not rank family and effort independently across routes",
+                "Rank family and effort independently across routes",
+                "Codex complete-route ordering",
+            ),
+            (
                 "standard: Luna 5.6+ / Max",
                 "standard: Luna 5.6+ / High",
                 "Codex standard complete route",
