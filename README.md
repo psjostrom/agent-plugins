@@ -16,6 +16,22 @@ Personal plugins for Claude Code, Codex, Cursor, and opencode.
 | `handoff` | yes | yes | yes | yes |
 | `homey` | yes | no | no | no |
 
+## Documentation
+
+Each plugin has its own guide with purpose, invocation syntax, workflow,
+platform behavior, safety boundaries, examples, and troubleshooting:
+
+| Plugin | Guide | Main entrypoint |
+| --- | --- | --- |
+| `reviewer` | [`plugins/reviewer/README.md`](plugins/reviewer/README.md) | `$parallel-review` / `/reviewer:review` / `/parallel-review` |
+| `shipwright` | [`plugins/shipwright/README.md`](plugins/shipwright/README.md) | `$shipwright:shipwright` / `/shipwright:shipwright` / `/shipwright` |
+| `handoff` | [`plugins/handoff/README.md`](plugins/handoff/README.md) | `$handoff:handoff` / `/handoff:handoff` / `/handoff` |
+| `homey` | [`plugins/homey/README.md`](plugins/homey/README.md) | `/homey:homey-flows` |
+
+`homey` is a Claude Code command plugin, not an Agent Skill. It is included in
+the documentation set because it is the repository's fourth user-facing
+automation entrypoint.
+
 ## Install
 
 ### Codex
