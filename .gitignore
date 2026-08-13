@@ -8,5 +8,8 @@ docs/superpowers/
 # superpowers brainstorm sessions
 .superpowers/
 
+# personal agent instructions
+.claude.local.md
+
 # task handofs and findings
 docs/findings/
