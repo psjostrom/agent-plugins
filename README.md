@@ -69,11 +69,13 @@ OpenCode users clone each supported standalone repository and run its installer:
 ```sh
 git clone https://github.com/psjostrom/reviewer.git
 cd reviewer
+git checkout a96927c6bd11d72a40f1f34610e53a2f3a19e2ee
 ./install-opencode.sh install
 cd ..
 
 git clone https://github.com/psjostrom/handoff.git
 cd handoff
+git checkout 7c6ce811f81631aa8d73cf45ae3a6c8f37b5ce3a
 ./install-opencode.sh install
 ```
 
