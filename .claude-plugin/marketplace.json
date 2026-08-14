@@ -5,13 +5,15 @@
   },
   "metadata": {
     "description": "Personal Claude Code plugins",
-    "version": "1.0.0",
-    "pluginRoot": "./plugins"
+    "version": "1.0.0"
   },
   "plugins": [
     {
       "name": "reviewer",
-      "source": "./plugins/reviewer",
+      "source": {
+        "source": "github",
+        "repo": "psjostrom/reviewer"
+      },
       "description": "Multi-agent code review with scored issues. /reviewer:review runs parallel review agents (bug hunter, guidelines, error/edges, architecture, tests) plus project-specific domain agents for Strimma, Springa, and Garmin CIQ. Scores every issue and either fixes locally or posts inline PR comments.",
       "version": "1.1.0",
       "author": {
@@ -27,7 +29,10 @@
     },
     {
       "name": "homey",
-      "source": "./plugins/homey",
+      "source": {
+        "source": "github",
+        "repo": "psjostrom/homey"
+      },
       "description": "Create, update, and manage Homey Pro flows via the local REST API.",
       "version": "1.0.0",
       "author": {
@@ -43,7 +48,10 @@
     },
     {
       "name": "shipwright",
-      "source": "./plugins/shipwright",
+      "source": {
+        "source": "github",
+        "repo": "psjostrom/shipwright"
+      },
       "description": "Strict end-to-end development with adaptive subagents, independent review, and real verification.",
       "author": {
         "name": "psjostrom"
@@ -59,7 +67,10 @@
     },
     {
       "name": "handoff",
-      "source": "./plugins/handoff",
+      "source": {
+        "source": "github",
+        "repo": "psjostrom/handoff"
+      },
       "description": "Creates self-contained handoff dossiers so a fresh standard or frontier agent can continue a task.",
       "author": {
         "name": "psjostrom"

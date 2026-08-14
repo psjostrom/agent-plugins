@@ -7,8 +7,9 @@
     {
       "name": "reviewer",
       "source": {
-        "source": "local",
-        "path": "./plugins/reviewer"
+        "source": "url",
+        "url": "https://github.com/psjostrom/reviewer.git",
+        "ref": "main"
       },
       "policy": {
         "installation": "AVAILABLE",
@@ -19,8 +20,9 @@
     {
       "name": "shipwright",
       "source": {
-        "source": "local",
-        "path": "./plugins/shipwright"
+        "source": "url",
+        "url": "https://github.com/psjostrom/shipwright.git",
+        "ref": "main"
       },
       "policy": {
         "installation": "AVAILABLE",
@@ -31,8 +33,9 @@
     {
       "name": "handoff",
       "source": {
-        "source": "local",
-        "path": "./plugins/handoff"
+        "source": "url",
+        "url": "https://github.com/psjostrom/handoff.git",
+        "ref": "main"
       },
       "policy": {
         "installation": "AVAILABLE",
