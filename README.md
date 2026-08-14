@@ -1,62 +1,35 @@
-# agent-plugins
+# Agent Plugins
 
-Personal plugins for Claude Code, Codex, Cursor, and opencode.
+Per Sjöström's marketplace/catalog of agent plugins.
 
-- `reviewer` — risk-based parallel review for pull requests and local changes.
-- `homey` — Homey Pro flow management for Claude Code.
-- `shipwright` — strict end-to-end development via `$shipwright:shipwright` in Codex, `/shipwright:shipwright` in Claude Code, or `/shipwright` in Cursor.
-- `handoff` — write `.handoff/` dossiers for standard/frontier continuation via `$handoff:handoff` / `/handoff:handoff` / `/handoff`.
+Implementations live in standalone repositories:
+
+- [Reviewer](https://github.com/psjostrom/reviewer) — risk-based parallel code review.
+- [Shipwright](https://github.com/psjostrom/shipwright) — strict end-to-end development.
+- [Handoff](https://github.com/psjostrom/handoff) — self-contained continuation dossiers.
+- [Homey](https://github.com/psjostrom/homey) — Homey Pro flow management for Claude Code.
 
 ## Harness coverage
 
 | Plugin | Claude Code | Codex | Cursor | opencode |
 | --- | --- | --- | --- | --- |
-| `reviewer` | yes | yes | yes | yes |
-| `shipwright` | yes | yes | yes | no port |
-| `handoff` | yes | yes | yes | yes |
-| `homey` | yes | no | no | no |
+| Reviewer | yes | yes | yes | yes |
+| Shipwright | yes | yes | yes | no port |
+| Handoff | yes | yes | yes | yes |
+| Homey | yes | no | no | no |
 
-## Documentation
+## Plugin versus skill
 
-Each plugin has its own guide with purpose, invocation syntax, workflow,
-platform behavior, safety boundaries, examples, and troubleshooting:
-
-| Plugin | Guide | Main entrypoint |
-| --- | --- | --- |
-| `reviewer` | [`plugins/reviewer/README.md`](plugins/reviewer/README.md) | `$parallel-review` / `/reviewer:review` / `/parallel-review` |
-| `shipwright` | [`plugins/shipwright/README.md`](plugins/shipwright/README.md) | `$shipwright:shipwright` / `/shipwright:shipwright` / `/shipwright` |
-| `handoff` | [`plugins/handoff/README.md`](plugins/handoff/README.md) | `$handoff:handoff` / `/handoff:handoff` / `/handoff` |
-| `homey` | [`plugins/homey/README.md`](plugins/homey/README.md) | `/homey:homey-flows` |
-
-`homey` is a Claude Code command plugin, not an Agent Skill. It is included in
-the documentation set because it is the repository's fourth user-facing
-automation entrypoint.
+A plugin is the installable package discovered by a harness. A skill is an
+instruction entrypoint inside a plugin. Reviewer, Shipwright, and Handoff expose
+skills where supported; Homey is a Claude Code command plugin, not an Agent
+Skill.
 
 ## Install
 
-### Codex
-
-Add this repository as a marketplace, then install the plugins you want:
-
-```sh
-codex plugin marketplace add psjostrom/agent-plugins
-codex plugin add reviewer@agent-plugins
-codex plugin add shipwright@agent-plugins
-codex plugin add handoff@agent-plugins
-```
-
-Start a new Codex task after installation so the installed skills are available.
-
-To test an existing local checkout instead, run the marketplace command from
-the repository root with `.` as the source:
-
-```sh
-codex plugin marketplace add .
-```
-
 ### Claude Code
 
-Add the marketplace and install the plugins you want:
+Existing marketplace commands stay unchanged:
 
 ```sh
 claude plugin marketplace add psjostrom/agent-plugins
@@ -66,130 +39,61 @@ claude plugin install shipwright@agent-plugins
 claude plugin install handoff@agent-plugins
 ```
 
-Reload plugins in an active session with `/reload-plugins`, or start a new
-Claude Code session. To install from a local checkout, replace
-`psjostrom/agent-plugins` with `.` in the marketplace command.
-
-### Cursor
-
-This repository is a **marketplace of multiple plugins**, not a single plugin.
-Cursor reads [`.cursor-plugin/marketplace.json`](.cursor-plugin/marketplace.json).
-Add the marketplace once, then install each plugin you want from it.
-
-**1. Add the marketplace**
-
-- **Teams / Enterprise (preferred):** Dashboard → Plugins → Add Marketplace →
-  Import from Repo → paste `https://github.com/psjostrom/agent-plugins`.
-  Optionally enable Auto Refresh after connecting the Cursor GitHub App.
-- **Personal:** Customize → Plugins → paste
-  `https://github.com/psjostrom/agent-plugins` (or `/add-plugin` with that URL).
-  That registers the marketplace catalog; it does not install every plugin.
-  Personal GitHub marketplace imports can pin a stale commit; if
-  Update/Reinstall does not move forward, re-import the marketplace or use
-  local iteration below.
-
-**2. Install individual plugins**
-
-From the imported marketplace, install each plugin you want (user or project
-scope). Currently listed: shipwright (`/shipwright`; requires Superpowers
-6.1.1+ as a separate Cursor marketplace plugin), reviewer
-(`/parallel-review`, or “use parallel-review”), and handoff (`/handoff`).
-
-#### Local iteration (plugin development only)
-
-`~/.cursor/plugins/local` is for testing unpublished changes, not durable
-installs. Cursor rejects symlinks whose target is outside that directory, so
-this repo's installer copies the plugin tree:
-
-```sh
-./install-cursor.sh install reviewer
-./install-cursor.sh install shipwright
-./install-cursor.sh install handoff
-./install-cursor.sh list
-```
-
-Reload the Cursor window afterward (`Developer: Reload Window`). Re-run install
-after source edits.
-
-### opencode
-
-opencode currently supports the `reviewer` and `handoff` plugins. Clone this
-repository, then run the installer from its root:
-
-```sh
-git clone https://github.com/psjostrom/agent-plugins.git
-cd agent-plugins
-./install-opencode.sh install reviewer
-./install-opencode.sh install handoff
-```
-
-This installs global symlinks under `~/.config/opencode/`. For a repository-only
-installation, run the installer from that repository and pass `--project`:
-
-```sh
-/path/to/agent-plugins/install-opencode.sh install reviewer --project
-```
-
-## Uninstall
-
-There is no single cross-harness uninstall. Use the matching harness below.
-
 ### Codex
 
-```sh
-codex plugin remove reviewer@agent-plugins
-codex plugin remove shipwright@agent-plugins
-codex plugin remove handoff@agent-plugins
-```
-
-`homey` is not a Codex plugin.
-
-### Claude Code
+Existing marketplace commands stay unchanged:
 
 ```sh
-claude plugin uninstall reviewer@agent-plugins
-claude plugin uninstall homey@agent-plugins
-claude plugin uninstall shipwright@agent-plugins
-claude plugin uninstall handoff@agent-plugins
+codex plugin marketplace add psjostrom/agent-plugins
+codex plugin add reviewer@agent-plugins
+codex plugin add shipwright@agent-plugins
+codex plugin add handoff@agent-plugins
 ```
 
-If the plugin was installed with a non-default scope, pass `--scope user`,
-`--scope project`, or `--scope local` to match the install. You can also use
-`/plugin` in a Claude Code session to uninstall interactively.
+Start a new task after installation so installed skills are available.
 
-### Cursor
+### Cursor migration
 
-**Marketplace installs (durable):**
+This repository no longer publishes a Cursor marketplace. Its old marketplace
+URL no longer updates these plugins. Install the standalone
+[Reviewer](https://github.com/psjostrom/reviewer),
+[Shipwright](https://github.com/psjostrom/shipwright), and
+[Handoff](https://github.com/psjostrom/handoff) listings through Cursor's
+plugin UI. Shipwright also requires Superpowers 6.1.1 or newer as a separate
+Cursor plugin. Homey has no Cursor port.
 
-- **UI:** Customize → Plugins — uninstall `reviewer`, `shipwright`, and/or `handoff`.
-- **Interactive CLI:** in Cursor Agent/CLI, use `/plugin` to uninstall at user or project scope.
-- **No scriptable shell uninstall** for marketplace plugins yet (nothing like `agent plugin uninstall …`). `agent plugin marketplace remove` only drops a marketplace registration, not an individual plugin.
+### OpenCode migration
 
-`homey` is not a Cursor plugin.
-
-**Local iteration copies only** (`~/.cursor/plugins/local`):
+OpenCode users clone each supported standalone repository and run its installer:
 
 ```sh
-./install-cursor.sh uninstall reviewer
-./install-cursor.sh uninstall shipwright
-./install-cursor.sh uninstall handoff
+git clone https://github.com/psjostrom/reviewer.git
+cd reviewer
+git checkout a96927c6bd11d72a40f1f34610e53a2f3a19e2ee
+./install-opencode.sh install
+cd ..
+
+git clone https://github.com/psjostrom/handoff.git
+cd handoff
+git checkout 7c6ce811f81631aa8d73cf45ae3a6c8f37b5ce3a
+./install-opencode.sh install
 ```
 
-Local uninstall does not remove a marketplace install, and vice versa.
+These replace the catalog commands `./install-opencode.sh install reviewer` and
+`./install-opencode.sh install handoff`. Reviewer and Handoff require the global
+install for trusted shared-file resolution; `--project` adds discovery links but
+does not replace it. Existing Handoff users must follow the
+[guarded legacy-link replacement](https://github.com/psjostrom/handoff#migration)
+before installing. Shipwright and Homey have no OpenCode port.
 
-### opencode
+## Invoke
 
-```sh
-./install-opencode.sh uninstall reviewer
-./install-opencode.sh uninstall handoff
-```
+| Plugin | Codex | Claude Code | Cursor | opencode |
+| --- | --- | --- | --- | --- |
+| Reviewer | `$parallel-review` | `/reviewer:review` | `/parallel-review` | `/parallel-review` |
+| Shipwright | `$shipwright:shipwright` | `/shipwright:shipwright` | `/shipwright` | — |
+| Handoff | `$handoff:handoff` | `/handoff:handoff` | `/handoff` | `/handoff` |
+| Homey | — | `/homey:homey-flows` | — | — |
 
-If you installed with `--project` / `-p`, uninstall the same way:
-
-```sh
-./install-opencode.sh uninstall reviewer --project
-./install-opencode.sh uninstall handoff --project
-```
-
-`shipwright` and `homey` have no opencode port, so there is nothing to uninstall
-for them on opencode.
+See each standalone repository for behavior, safety, uninstall, and development
+documentation.
