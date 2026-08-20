@@ -9,7 +9,7 @@
       "source": {
         "source": "url",
         "url": "https://github.com/psjostrom/reviewer.git",
-        "ref": "a96927c6bd11d72a40f1f34610e53a2f3a19e2ee"
+        "ref": "9605fa1d0ee1e3e2e6c69cf997432a4d4e33709c"
       },
       "policy": {
         "installation": "AVAILABLE",
@@ -22,7 +22,7 @@
       "source": {
         "source": "url",
         "url": "https://github.com/psjostrom/shipwright.git",
-        "ref": "5db59415147139ff4862db3311cae4c879f5789e"
+        "ref": "133859e1f616f2010e2d4c2d3391650a06550876"
       },
       "policy": {
         "installation": "AVAILABLE",
@@ -35,7 +35,7 @@
       "source": {
         "source": "url",
         "url": "https://github.com/psjostrom/handoff.git",
-        "ref": "7c6ce811f81631aa8d73cf45ae3a6c8f37b5ce3a"
+        "ref": "9b8a4b72e6474df934cb7fcdbe56e18ef2747930"
       },
       "policy": {
         "installation": "AVAILABLE",

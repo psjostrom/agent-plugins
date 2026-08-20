@@ -13,9 +13,9 @@ Implementations live in standalone repositories:
 
 | Plugin | Claude Code | Codex | Cursor | opencode |
 | --- | --- | --- | --- | --- |
-| Reviewer | yes | yes | yes | yes |
-| Shipwright | yes | yes | yes | no port |
-| Handoff | yes | yes | yes | yes |
+| Reviewer | yes | yes | pending review | yes |
+| Shipwright | yes | yes | pending review | no port |
+| Handoff | yes | yes | pending review | yes |
 | Homey | yes | no | no | no |
 
 ## Plugin versus skill
@@ -55,12 +55,13 @@ Start a new task after installation so installed skills are available.
 ### Cursor migration
 
 This repository no longer publishes a Cursor marketplace. Its old marketplace
-URL no longer updates these plugins. Install the standalone
+URL no longer updates these plugins. The standalone marketplace listings for
 [Reviewer](https://github.com/psjostrom/reviewer),
 [Shipwright](https://github.com/psjostrom/shipwright), and
-[Handoff](https://github.com/psjostrom/handoff) listings through Cursor's
-plugin UI. Shipwright also requires Superpowers 6.1.1 or newer as a separate
-Cursor plugin. Homey has no Cursor port.
+[Handoff](https://github.com/psjostrom/handoff) are pending review and are not
+yet available to install through Cursor's plugin UI. Once accepted, Shipwright
+will also require Superpowers 6.1.1 or newer as a separate Cursor plugin. Homey
+has no Cursor port.
 
 ### OpenCode migration
 
@@ -69,13 +70,13 @@ OpenCode users clone each supported standalone repository and run its installer:
 ```sh
 git clone https://github.com/psjostrom/reviewer.git
 cd reviewer
-git checkout a96927c6bd11d72a40f1f34610e53a2f3a19e2ee
+git checkout 9605fa1d0ee1e3e2e6c69cf997432a4d4e33709c
 ./install-opencode.sh install
 cd ..
 
 git clone https://github.com/psjostrom/handoff.git
 cd handoff
-git checkout 7c6ce811f81631aa8d73cf45ae3a6c8f37b5ce3a
+git checkout 9b8a4b72e6474df934cb7fcdbe56e18ef2747930
 ./install-opencode.sh install
 ```
 
