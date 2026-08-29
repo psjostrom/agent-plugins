@@ -11,12 +11,12 @@ Implementations live in standalone repositories:
 
 ## Harness coverage
 
-| Plugin | Claude Code | Codex | Cursor | opencode |
-| --- | --- | --- | --- | --- |
-| Reviewer | yes | yes | yes | yes |
-| Shipwright | yes | yes | yes | no port |
-| Handoff | yes | yes | yes | yes |
-| Homey | yes | no | no | no |
+| Plugin | Claude Code | Codex | Cursor | opencode | Antigravity |
+| --- | --- | --- | --- | --- | --- |
+| Reviewer | yes | yes | yes | yes | yes |
+| Shipwright | yes | yes | yes | no port | yes |
+| Handoff | yes | yes | yes | yes | yes |
+| Homey | yes | no | no | no | no |
 
 ## Plugin versus skill
 
@@ -86,14 +86,24 @@ does not replace it. Existing Handoff users must follow the
 [guarded legacy-link replacement](https://github.com/psjostrom/handoff#migration)
 before installing. Shipwright and Homey have no OpenCode port.
 
+### Antigravity
+
+Install standalone plugins directly using the Antigravity CLI:
+
+```sh
+agy plugin install https://github.com/psjostrom/reviewer
+agy plugin install https://github.com/psjostrom/shipwright
+agy plugin install https://github.com/psjostrom/handoff
+```
+
 ## Invoke
 
-| Plugin | Codex | Claude Code | Cursor | opencode |
-| --- | --- | --- | --- | --- |
-| Reviewer | `$parallel-review` | `/reviewer:review` | `/parallel-review` | `/parallel-review` |
-| Shipwright | `$shipwright:shipwright` | `/shipwright:shipwright` | `/shipwright` | — |
-| Handoff | `$handoff:handoff` | `/handoff:handoff` | `/handoff` | `/handoff` |
-| Homey | — | `/homey:homey-flows` | — | — |
+| Plugin | Codex | Claude Code | Cursor | opencode | Antigravity |
+| --- | --- | --- | --- | --- | --- |
+| Reviewer | `$parallel-review` | `/reviewer:review` | `/parallel-review` | `/parallel-review` | `/parallel-review` |
+| Shipwright | `$shipwright:shipwright` | `/shipwright:shipwright` | `/shipwright` | — | `/shipwright` |
+| Handoff | `$handoff:handoff` | `/handoff:handoff` | `/handoff` | `/handoff` | `/handoff` |
+| Homey | — | `/homey:homey-flows` | — | — | — |
 
 See each standalone repository for behavior, safety, uninstall, and development
 documentation.
