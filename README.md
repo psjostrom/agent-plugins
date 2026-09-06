@@ -87,10 +87,4 @@ agy plugin install https://github.com/psjostrom/handoff
 | Handoff | `/handoff:handoff` | `$handoff:handoff` | `/handoff` | `/handoff` | `/handoff` |
 | Homey | `/homey:homey-flows` | — | — | — | — |
 
-## Plugin versus skill
-
-A plugin is the installable package discovered by a harness. A skill is an
-instruction entrypoint inside a plugin. Reviewer, Shipwright, and Handoff expose
-skills where supported. Homey is a Claude Code command plugin.
-
 Licensed under [MIT](LICENSE).
